@@ -43,6 +43,10 @@ elbaz-blueprints/
     │       ├── SKILL.md
     │       ├── reference/
     │       └── scripts/
+    ├── general/
+    │   └── initializing-claude-md/
+    │       ├── SKILL.md
+    │       └── reference/
     └── odoo/
         └── (coming soon)
 ```
@@ -52,6 +56,7 @@ elbaz-blueprints/
 | Skill | Domain | Description |
 |---|---|---|
 | [bootstrapping-flutter-mvvm](skills/flutter/bootstrapping-flutter-mvvm/SKILL.md) | Flutter | Scaffolds Flutter projects with MVVM + BLoC (Cubit) architecture — core infrastructure, feature skeletons, Android flavors, DI, routing, assets, localization, error handling, and theming. |
+| [initializing-claude-md](skills/general/initializing-claude-md/SKILL.md) | General | Generates or hardens a project's `CLAUDE.md` for any language/framework — detects the stack, fetches its current official docs, and writes strict, specific Do/Don't rules grounded in what was actually fetched or observed, never memorized. |
 
 ## Flutter
 
@@ -79,6 +84,25 @@ Full plain-language explanation of everything this skill does: [`guides/flutter/
 - A second script scaffolds individual feature folders on top of an already-bootstrapped project
 
 Full usage: [skills/flutter/bootstrapping-flutter-mvvm/SKILL.md](skills/flutter/bootstrapping-flutter-mvvm/SKILL.md)
+
+## General
+
+### initializing-claude-md
+
+Why it matters: a `CLAUDE.md` is only as good as it is specific and current — generic advice ("write clean code," "follow best practices") is worthless, and rules copied from a framework's docs six months ago are actively wrong once that framework moves on. This skill fixes both problems at generation time, for any stack, not just the ones it ships examples for.
+
+**Does:**
+- Detects the project's stack from its manifest file (`pubspec.yaml`, `package.json`, `requirements.txt`, `go.mod`, `Gemfile`, `composer.json`, `pom.xml`/`build.gradle`, `*.csproj`, `Cargo.toml`, `mix.exs`, ...) — and for JS/Python in particular, inspects dependencies to identify the actual framework (React vs. Next.js vs. Vue, Django vs. Flask vs. FastAPI, etc.)
+- Fetches that framework's **current** official docs — a built-in map of known doc roots for common stacks, falling back to a live search for anything not in the map
+- Writes `CLAUDE.md` in a fixed six-section template (Project Overview, Architecture, Tech Stack, Conventions, Do, Don't) — every `Do`/`Don't` rule traceable to something it actually found in the codebase or actually fetched, never asserted from memory
+- On a project that **already has** a `CLAUDE.md`, switches to update mode: asks what mistake just happened, adds exactly one new rule, and touches nothing else — this is the "notice a mistake → add a rule" loop, built into the skill instead of done by hand
+
+**Use it effectively:**
+- First run on a project (no `CLAUDE.md` yet) does the full analysis — expect it to take longer than `/init`, since it's actually fetching current documentation, not just reading the repo
+- Every run after that should be the update flow — one mistake, one rule, immediately, rather than batching fixes
+- Requires live web access (`WebFetch`/`WebSearch`) to do its job properly — it's built for Claude Code, not environments without network access
+
+Full usage: [skills/general/initializing-claude-md/SKILL.md](skills/general/initializing-claude-md/SKILL.md)
 
 ## Adding a new skill
 
