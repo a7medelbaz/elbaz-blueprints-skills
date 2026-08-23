@@ -5,9 +5,11 @@
 `catch (_)` discards the original error, including any server-provided message. Always:
 ```dart
 catch (e) {
-  emit(state.copyWith(status: FeatureStatus.failure, error: ErrorHandler.instance.handle(e)));
+  emit(state.copyWith(status: FeatureStatus.failure, error: sl<ErrorHandler>().handle(e)));
 }
 ```
+
+`ErrorHandler` is always resolved from DI as `sl<ErrorHandler>()` — it is an abstract interface with no static members, so `ErrorHandler.handle(...)` and `ErrorHandler.instance` do not exist and will not compile.
 
 ## `AppError`
 

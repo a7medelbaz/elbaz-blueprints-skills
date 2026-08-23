@@ -1,12 +1,15 @@
 // Creates the folder skeleton for a new MVVM feature. Intentionally minimal:
 // it does NOT write repo/cubit/state/screen file contents — Claude writes
 // those afterward, sized to what the feature actually needs (see SKILL.md).
-// Usage: dart run scripts/scaffold_feature.dart <feature_name>
+//
+// Usage: dart run <skill_dir>/scripts/scaffold_feature.dart <feature_name>
+// Run from the PROJECT ROOT (it writes lib/features/<name>/). Contrast
+// scaffold_project.dart, which runs from the project's parent directory.
 import 'dart:io';
 
 void main(List<String> args) async {
   if (args.isEmpty) {
-    stderr.writeln('Usage: dart run scripts/scaffold_feature.dart <feature_name>');
+    stderr.writeln('Usage: dart run <skill_dir>/scripts/scaffold_feature.dart <feature_name>');
     exit(1);
   }
 
@@ -15,6 +18,16 @@ void main(List<String> args) async {
     stderr.writeln(
       "Error: '$featureName' is not valid snake_case. "
       'Use lowercase letters, digits, and underscores, starting with a letter.',
+    );
+    exit(1);
+  }
+
+  // Without this guard, running from the wrong directory silently creates a
+  // stray lib/features/ tree outside the project instead of failing.
+  if (!await File('pubspec.yaml').exists()) {
+    stderr.writeln(
+      'Error: no pubspec.yaml in the current directory (${Directory.current.path}).\n'
+      'Run this from the Flutter project root.',
     );
     exit(1);
   }

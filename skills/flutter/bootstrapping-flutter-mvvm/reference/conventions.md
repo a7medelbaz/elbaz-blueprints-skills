@@ -13,6 +13,11 @@
 ## Target project structure
 
 ```
+assets/
+├── images/            # raster images — registered folder-level in pubspec.yaml
+├── svgs/               # SVGs, rendered via flutter_svg — registered folder-level
+├── fonts/              # empty until a real font is added — see pubspec.yaml's `# fonts:` template
+└── translations/       # one JSON per locale (en.json seeded) — registered folder-level
 lib/
 ├── core/
 │   ├── config/app_config.dart
@@ -120,6 +125,8 @@ context.pop();
 **go_router projects only:** `context_ext.dart` does not define `pop`/`pushNamed` in this mode — go_router's own `BuildContext` extension already provides `context.pop()`, `context.push()`, `context.go()`, `context.goNamed()`. Use those directly; see [routing.md](routing.md).
 
 ## Localization
+
+Already wired by `scaffold_project.dart` — `en.json` is seeded, `EasyLocalization` wraps `App()` in both `main_dev.dart`/`main_prod.dart`, and `app.dart`'s `MaterialApp` already reads `context.localizationDelegates`/`context.supportedLocales`/`context.locale`. Adding a locale is just: create the JSON file, add it to `supportedLocales` in both `main_*.dart` files.
 
 `easy_localization`, one JSON file per locale under `assets/translations/` (`en.json`, `ar.json`), keys namespaced by feature to avoid collisions:
 ```json

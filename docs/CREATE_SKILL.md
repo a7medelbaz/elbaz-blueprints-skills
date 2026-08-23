@@ -5,12 +5,48 @@
 
 ---
 
+## This repo: elbaz-blueprints
+
+This repo is a personal skills package (`elbaz-blueprints`) distributed via
+[skills.sh](https://skills.sh). Everything below in this file is the general
+Anthropic skill-authoring standard — this section is what's specific to
+building a skill **in this repo**.
+
+**Published layout:**
+```
+elbaz-blueprints/
+├── skills.sh.json           ← package manifest, must list every skill
+└── skills/
+    ├── flutter/
+    │   └── bootstrapping-flutter-mvvm/   ← one real skill, use as your template
+    └── <domain>/
+        └── <skill-name>/
+```
+
+**Workflow for adding or changing a skill:**
+1. Build and iterate locally in `.claude/skills/` (this project) or `~/.claude/skills/` (global, all projects) — this is the dev sandbox.
+2. Once it passes the evaluation checklist below, copy it into `skills/<domain>/<skill-name>/` — pick the existing domain folder it belongs to, or create a new one.
+3. Register it in `skills.sh.json` under `"skills"`: `name`, `path`, `description`.
+4. Add a row for it to the table in `README.md`.
+5. Commit and push — skills.sh syncs from GitHub automatically.
+
+**Hard rules for this repo:**
+- Never add an entry to `skills.sh.json` without the matching skill folder existing under `skills/`, and vice versa.
+- The skill folder name must exactly match the `"name"` field in both `skills.sh.json` and the `SKILL.md` frontmatter.
+- `skills/` is the published source of truth. `.claude/skills/` and `~/.claude/skills/` are dev sandboxes only — never the other way around.
+- Prefer nesting a new skill under an existing domain folder (`flutter/`, `odoo/`, …) before creating a new domain.
+
+---
+
 ## Quick orientation
 
 **What is a skill?** A directory with a `SKILL.md` file (+ optional scripts and reference files).
 Claude Code auto-discovers skills from:
 - `.claude/skills/` — this project only
 - `~/.claude/skills/` — all projects on this machine
+
+In this repo, skills also live published under `skills/<domain>/<skill-name>/` — see
+"This repo: elbaz-blueprints" above for how that maps to the sandbox locations.
 
 **The 3-level loading model (progressive disclosure):**
 

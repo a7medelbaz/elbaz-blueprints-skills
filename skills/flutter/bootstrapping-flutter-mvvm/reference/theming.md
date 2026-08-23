@@ -1,113 +1,61 @@
 # Theming
 
-## AppColors — raw palette
+All files below are already written by `scaffold_project.dart`. This describes how to **extend** them — do not recreate them.
 
-`core/theme/app_colors.dart` — only raw constants, never referenced directly from UI widgets (use `CustomColors` or `Theme.of(context)` instead):
+## Contents
+- Layer roles (which file to touch)
+- Adding a semantic color
+- Adding a text style
+- Accessing theme values in a widget
+
+## Layer roles — which file to touch
+
+| File | Holds | Referenced from |
+|---|---|---|
+| `core/theme/app_colors.dart` | Raw palette constants only | `custom_colors.dart`, `theme_data/*` — **never** from a widget |
+| `core/theme/custom_colors.dart` | Semantic tokens that differ per brightness (`success`, `cardBackground`) | Widgets, via `context.customColors` |
+| `core/theme/app_text_styles.dart` | Named `TextStyle` getters | Widgets, directly |
+| `core/theme/theme_data/theme_data_light.dart` / `_dark.dart` | `ThemeData` wiring | `app.dart` (already wired) |
+
+The scaffolded palette and type scale are placeholders marked `TODO` — replace the values with the project's real ones, keeping the structure.
+
+## Adding a semantic color
+
+A color that means the same thing but *looks* different in light vs dark belongs in `CustomColors`, not in a widget. Add the field in four places within `custom_colors.dart` — the constructor, `light`, `dark`, `copyWith`, and `lerp`:
+
 ```dart
-import 'package:flutter/material.dart';
+final Color warning;                                    // 1. field + constructor param
 
-class AppColors {
-  AppColors._();
+static const light = CustomColors(warning: Color(0xFFF57C00), /* ... */);
+static const dark  = CustomColors(warning: Color(0xFFFFB74D), /* ... */);
 
-  static const Color primary = Color(0xFF1E88E5);
-  static const Color secondary = Color(0xFF26A69A);
-  static const Color error = Color(0xFFD32F2F);
-  static const Color white = Color(0xFFFFFFFF);
-  static const Color black = Color(0xFF000000);
-  // TODO: replace with the project's real palette
-}
+// 3. copyWith
+warning: warning ?? this.warning,
+
+// 4. lerp — required, or the color snaps instead of animating on theme change
+warning: Color.lerp(warning, other.warning, t)!,
 ```
 
-## CustomColors — semantic tokens via ThemeExtension
+Forgetting `lerp` is the common mistake: it compiles, but the color jumps during theme transitions.
 
-Use `ThemeExtension` for colors that change meaning between light/dark (e.g. "success," "card background") rather than hardcoding a color per theme in widgets.
+A color that is identical in both themes doesn't need `CustomColors` — put it in `AppColors` and reference it from `ThemeData`.
 
-`core/theme/custom_colors.dart`:
+## Adding a text style
+
+Add a getter to `AppTextStyles`. Use `.sp` so it scales with `flutter_screenutil`:
+
 ```dart
-import 'package:flutter/material.dart';
-import 'app_colors.dart';
-
-class CustomColors extends ThemeExtension<CustomColors> {
-  final Color success;
-  final Color cardBackground;
-
-  const CustomColors({required this.success, required this.cardBackground});
-
-  static const light = CustomColors(
-    success: Color(0xFF2E7D32),
-    cardBackground: AppColors.white,
-  );
-
-  static const dark = CustomColors(
-    success: Color(0xFF66BB6A),
-    cardBackground: Color(0xFF1E1E1E),
-  );
-
-  @override
-  CustomColors copyWith({Color? success, Color? cardBackground}) => CustomColors(
-    success: success ?? this.success,
-    cardBackground: cardBackground ?? this.cardBackground,
-  );
-
-  @override
-  CustomColors lerp(ThemeExtension<CustomColors>? other, double t) {
-    if (other is! CustomColors) return this;
-    return CustomColors(
-      success: Color.lerp(success, other.success, t)!,
-      cardBackground: Color.lerp(cardBackground, other.cardBackground, t)!,
-    );
-  }
-}
+static TextStyle get subtitle => TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w500);
 ```
 
-Access via a `context_ext.dart` helper (add alongside the navigation helpers):
+Never write a bare `TextStyle(...)` inside a widget.
+
+## Accessing theme values in a widget
+
 ```dart
-extension ThemeExt on BuildContext {
-  CustomColors get customColors => Theme.of(this).extension<CustomColors>()!;
-}
+context.customColors.success   // semantic color — getter already exists in ContextExt
+AppTextStyles.heading1         // text style
+context.isDarkMode             // brightness check
 ```
 
-Usage in a widget: `context.customColors.success`.
-
-## AppTextStyles
-
-`core/theme/app_text_styles.dart` — named static getters, not raw `TextStyle()` calls scattered through widgets:
-```dart
-import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-
-class AppTextStyles {
-  AppTextStyles._();
-
-  static TextStyle get heading1 => TextStyle(fontSize: 28.sp, fontWeight: FontWeight.bold);
-  static TextStyle get body => TextStyle(fontSize: 14.sp, fontWeight: FontWeight.normal);
-  static TextStyle get caption => TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w300);
-}
-```
-
-## Wiring into ThemeData
-
-`core/theme/theme_data/theme_data_light.dart`:
-```dart
-import 'package:flutter/material.dart';
-import '../app_colors.dart';
-import '../custom_colors.dart';
-
-ThemeData get lightTheme => ThemeData(
-  brightness: Brightness.light,
-  primaryColor: AppColors.primary,
-  scaffoldBackgroundColor: AppColors.white,
-  extensions: const [CustomColors.light],
-);
-```
-
-`core/theme/theme_data/theme_data_dark.dart` mirrors this with `Brightness.dark` and `CustomColors.dark`.
-
-Wire both into `MaterialApp` in `app.dart`:
-```dart
-MaterialApp(
-  theme: lightTheme,
-  darkTheme: darkTheme,
-  themeMode: ThemeMode.system,
-)
-```
+`customColors` is already defined on `ContextExt` in `core/utils/extensions/context_ext.dart`. **Do not declare a second extension** with the same getter — two extensions exposing one member on `BuildContext` is an ambiguous-extension-member compile error wherever both are in scope.

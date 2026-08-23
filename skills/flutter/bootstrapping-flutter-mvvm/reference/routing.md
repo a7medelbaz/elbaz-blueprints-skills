@@ -1,93 +1,68 @@
-# Routing patterns
+# Routing
 
-## Which to choose
+`scaffold_project.dart` writes the router for the mode chosen at scaffold time and wires it into `app.dart`. This describes how to **choose** the mode and **add routes** — the base files already exist.
+
+## Contents
+- Choosing a mode
+- Adding a route (named)
+- Adding a route (go_router)
+- Navigation helpers per mode
+
+## Choosing a mode
 
 | | Named routes | go_router |
 |---|---|---|
 | Deep linking / web URLs | No | Yes |
-| Nested navigation (bottom-nav tabs each with their own stack) | Awkward | Native support |
+| Nested navigation (tabs with their own stacks) | Awkward | Native |
 | Route count | Small (<15) | Any |
-| Setup complexity | Minimal | More boilerplate up front |
+| Setup complexity | Minimal | More boilerplate |
 
-Default to **named routes** unless the user needs deep linking, web support, or nested navigators — then use `go_router`.
+Default to **named routes** unless the project needs deep linking, web support, or nested navigators.
 
----
+Switching modes later means rewriting `core/router/` **and** `app.dart` (`MaterialApp` vs `MaterialApp.router`) **and** `context_ext.dart` — so confirm with the user before scaffolding rather than converting afterward.
 
-## Named routes
+## Adding a route — named
 
-`core/router/routes.dart`:
+Two edits, both required:
+
+1. A constant in `core/router/routes.dart`:
+   ```dart
+   static const String home = '/home';
+   ```
+2. A case in `core/router/app_router.dart`'s switch, above `default`:
+   ```dart
+   case Routes.home:
+     return MaterialPageRoute(builder: (_) => const HomeScreen());
+   ```
+
+If the screen needs a cubit, provide it at the route so it is scoped to that screen:
 ```dart
-class Routes {
-  Routes._();
-
-  static const String splash = '/';
-  static const String home = '/home';
-  // Add one constant per screen.
-}
-```
-
-`core/router/app_router.dart`:
-```dart
-import 'package:flutter/material.dart';
-import 'routes.dart';
-// import '../../features/home/ui/home_screen.dart';
-
-class AppRouter {
-  static Route<dynamic> generateRoute(RouteSettings settings) {
-    switch (settings.name) {
-      case Routes.home:
-        return MaterialPageRoute(builder: (_) => const Placeholder());
-      default:
-        return MaterialPageRoute(
-          builder: (_) => Scaffold(
-            body: Center(child: Text('No route defined for ${settings.name}')),
-          ),
-        );
-    }
-  }
-}
-```
-
-Wire into `MaterialApp` in `app.dart`:
-```dart
-MaterialApp(
-  initialRoute: Routes.splash,
-  onGenerateRoute: AppRouter.generateRoute,
-)
-```
-
-Navigate with the `context_ext.dart` helper: `context.pushNamed(Routes.home)`.
-
----
-
-## go_router
-
-`core/router/app_router.dart`:
-```dart
-import 'package:go_router/go_router.dart';
-import 'package:flutter/material.dart';
-// import '../../features/home/ui/home_screen.dart';
-
-final GoRouter appRouter = GoRouter(
-  initialLocation: '/',
-  routes: [
-    GoRoute(
-      path: '/',
-      builder: (context, state) => const Placeholder(),
+case Routes.home:
+  return MaterialPageRoute(
+    builder: (_) => BlocProvider(
+      create: (_) => sl<HomeCubit>(),
+      child: const HomeScreen(),
     ),
-    // Add one GoRoute per screen. Use `routes: [...]` nested inside
-    // a GoRoute for sub-navigation under that path.
-  ],
-);
+  );
 ```
 
-Wire into the app with `MaterialApp.router`:
+Passing arguments: read `settings.arguments` and cast it in the `case`.
+
+## Adding a route — go_router
+
+One edit — a `GoRoute` in the `routes:` list in `core/router/app_router.dart`:
 ```dart
-MaterialApp.router(
-  routerConfig: appRouter,
-)
+GoRoute(
+  path: '/home',
+  builder: (context, state) => const HomeScreen(),
+),
 ```
+Nest sub-navigation with a `routes: [...]` list inside a parent `GoRoute`. Path parameters come from `state.pathParameters['id']`.
 
-Navigate with `context.go('/home')`, `context.push('/home')`, or `context.pop()` — these come from `go_router`'s own `BuildContext` extension. `scaffold_project.dart --routing=go_router` deliberately omits `pop`/`pushNamed` from `context_ext.dart` in this mode (see conventions.md) — redeclaring them would collide with go_router's extension and fail to compile.
+## Navigation helpers per mode
 
-`scaffold_project.dart --routing=go_router` adds the `go_router` package automatically via `flutter pub add`. Only run `flutter pub add go_router` manually if you're converting an existing named-routes project by hand.
+**Named:** use the `context_ext.dart` helpers — `context.pushNamed(Routes.home)`, `context.pop()`.
+
+**go_router:** use go_router's own extension — `context.go('/home')`, `context.push('/home')`, `context.pop()`. In this mode `context_ext.dart` deliberately omits `pop`/`pushNamed`, because redeclaring them alongside go_router's extension is an ambiguous-extension-member compile error.
+
+Either way, never call `Navigator.push`/`Navigator.pop` directly.
