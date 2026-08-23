@@ -7,7 +7,7 @@ description: Scaffolds Flutter projects with MVVM + BLoC (Cubit) architecture �
 
 ## Running the scripts — read this first
 
-The scripts live in **this skill's** `scripts/` folder, not in the user's project. Always invoke them by their **absolute path** (this file's directory + `/scripts/...`); a bare `scripts/scaffold_project.dart` resolves against the user's project and fails.
+The scripts live in **this skill's** `scripts/` folder, not in the user's project. Always invoke them through `${CLAUDE_SKILL_DIR}`, which expands to this skill's directory regardless of the current working directory. A bare `scripts/scaffold_project.dart` resolves against the user's project and fails.
 
 Each script expects a different working directory:
 
@@ -22,7 +22,7 @@ Both new and existing projects go through the same script; it detects which by w
 
 **Step 1 — audit.** Never scaffold blind. Run with `--dry-run` to report what exists and what is missing, writing nothing:
 ```bash
-dart run <skill_dir>/scripts/scaffold_project.dart <project_name> --routing=named|go_router --dry-run
+dart run ${CLAUDE_SKILL_DIR}/scripts/scaffold_project.dart <project_name> --routing=named|go_router --dry-run
 ```
 
 **Step 2 — show the user** the dry-run summary (would create / already present / packages missing) and **ask whether to proceed.** Do not apply without their answer.
@@ -39,7 +39,7 @@ After applying, the project has `core/config`, `core/di`, `core/router`, `core/e
 
 From the project root:
 ```bash
-dart run <skill_dir>/scripts/scaffold_feature.dart <feature_name>
+dart run ${CLAUDE_SKILL_DIR}/scripts/scaffold_feature.dart <feature_name>
 ```
 
 This script is **intentionally minimal** — it creates only the folder skeleton (`data/`, `logic/cubit/`, `ui/`, `ui/widgets/`) and prints a DI reminder. It writes **no** file contents.
