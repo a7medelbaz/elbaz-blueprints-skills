@@ -3,7 +3,7 @@
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Project Overview
-`elbaz-blueprints` is Ahmed Elbaz's personal library of Claude Agent Skills, distributed via [skills.sh](https://skills.sh) (`npx skills add ahmed-elbaz/elbaz-blueprints`). Each skill is a `SKILL.md` package (plus optional scripts/reference files) that teaches Claude a repeatable workflow — currently `bootstrapping-flutter-mvvm` (Flutter/BLoC project scaffolding) and `initializing-claude-md` (this file's own generator).
+`elbaz-blueprints` is Ahmed Elbaz's personal library of Claude Agent Skills, distributed via [skills.sh](https://skills.sh) (`npx skills add ahmed-elbaz/elbaz-blueprints`). Each skill is a `SKILL.md` package (plus optional scripts/reference files) that teaches Claude a repeatable workflow — currently `bootstrapping-flutter-mvvm` (Flutter/BLoC project scaffolding) and `initing-claude` (this file's own generator).
 
 ## Architecture
 - `skills/<domain>/<skill-name>/` — the published source of truth: `SKILL.md` (required), `reference/` (domain-split deep material, one level deep only), `scripts/` (executed, never read into context).
@@ -18,7 +18,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - No application build system in this repo itself — it ships instructions and scripts consumed by other projects.
 
 ## Conventions
-- Skill names use gerund form (`bootstrapping-flutter-mvvm`, `initializing-claude-md`); stay consistent with this across new skills.
+- Skill names use gerund form (`bootstrapping-flutter-mvvm`, `initing-claude`); stay consistent with this across new skills.
 - The skill folder name, the `"name"` in `skills.sh.json`, and the `name:` in frontmatter must be identical.
 - Bundled scripts are always referenced via `${CLAUDE_SKILL_DIR}/scripts/...` in `SKILL.md`, never a bare relative path — a skill installs to `~/.claude/skills/<name>/` while the working directory is the user's project.
 - Reference files sit exactly one level below `SKILL.md` and document how to *extend* what a script generates — they never restate a script's own output (a duplicated code sample in `bootstrapping-flutter-mvvm` once drifted from the script and produced a compile error).

@@ -11,6 +11,7 @@ npx skills add ahmed-elbaz/elbaz-blueprints
 
 # Install one specific skill
 npx skills add ahmed-elbaz/elbaz-blueprints --skill bootstrapping-flutter-mvvm
+npx skills add ahmed-elbaz/elbaz-blueprints --skill initing-claude
 
 # Install for a specific agent
 npx skills add ahmed-elbaz/elbaz-blueprints --skill bootstrapping-flutter-mvvm --agent claude-code
@@ -35,6 +36,9 @@ elbaz-blueprints/
 │   │   └── bootstrapping-flutter-mvvm/
 │   │       ├── README.md    ← everything the skill does, in plain language
 │   │       └── flavors.md
+│   ├── general/
+│   │   └── initing-claude/
+│   │       └── README.md    ← everything the skill does, in plain language
 │   └── odoo/
 │       └── (coming soon)
 └── skills/
@@ -44,7 +48,7 @@ elbaz-blueprints/
     │       ├── reference/
     │       └── scripts/
     ├── general/
-    │   └── initializing-claude-md/
+    │   └── initing-claude/
     │       ├── SKILL.md
     │       └── reference/
     └── odoo/
@@ -56,7 +60,7 @@ elbaz-blueprints/
 | Skill | Domain | Description |
 |---|---|---|
 | [bootstrapping-flutter-mvvm](skills/flutter/bootstrapping-flutter-mvvm/SKILL.md) | Flutter | Scaffolds Flutter projects with MVVM + BLoC (Cubit) architecture — core infrastructure, feature skeletons, Android flavors, DI, routing, assets, localization, error handling, and theming. |
-| [initializing-claude-md](skills/general/initializing-claude-md/SKILL.md) | General | Generates or hardens a project's `CLAUDE.md` for any language/framework — detects the stack, fetches its current official docs, and writes strict, specific Do/Don't rules grounded in what was actually fetched or observed, never memorized. |
+| [initing-claude](skills/general/initing-claude/SKILL.md) | General | Generates or hardens a project's `CLAUDE.md` for any language/framework — detects the stack, fetches its current official docs, and writes strict, specific Do/Don't rules grounded in what was actually fetched or observed, never memorized. |
 
 ## Flutter
 
@@ -87,7 +91,7 @@ Full usage: [skills/flutter/bootstrapping-flutter-mvvm/SKILL.md](skills/flutter/
 
 ## General
 
-### initializing-claude-md
+### initing-claude
 
 Why it matters: a `CLAUDE.md` is only as good as it is specific and current — generic advice ("write clean code," "follow best practices") is worthless, and rules copied from a framework's docs six months ago are actively wrong once that framework moves on. This skill fixes both problems at generation time, for any stack, not just the ones it ships examples for.
 
@@ -97,12 +101,14 @@ Why it matters: a `CLAUDE.md` is only as good as it is specific and current — 
 - Writes `CLAUDE.md` in a fixed six-section template (Project Overview, Architecture, Tech Stack, Conventions, Do, Don't) — every `Do`/`Don't` rule traceable to something it actually found in the codebase or actually fetched, never asserted from memory
 - On a project that **already has** a `CLAUDE.md`, switches to update mode: asks what mistake just happened, adds exactly one new rule, and touches nothing else — this is the "notice a mistake → add a rule" loop, built into the skill instead of done by hand
 
+Full plain-language explanation of everything this skill does: [`guides/general/initing-claude/README.md`](guides/general/initing-claude/README.md)
+
 **Use it effectively:**
 - First run on a project (no `CLAUDE.md` yet) does the full analysis — expect it to take longer than `/init`, since it's actually fetching current documentation, not just reading the repo
 - Every run after that should be the update flow — one mistake, one rule, immediately, rather than batching fixes
 - Requires live web access (`WebFetch`/`WebSearch`) to do its job properly — it's built for Claude Code, not environments without network access
 
-Full usage: [skills/general/initializing-claude-md/SKILL.md](skills/general/initializing-claude-md/SKILL.md)
+Full usage: [skills/general/initing-claude/SKILL.md](skills/general/initing-claude/SKILL.md)
 
 ## Adding a new skill
 

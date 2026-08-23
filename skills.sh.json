@@ -8,8 +8,8 @@
       "description": "Scaffolds Flutter projects with MVVM + BLoC (Cubit) architecture — core infrastructure, feature skeletons, Android dev/production flavors, DI with get_it, routing, error handling, and theming."
     },
     {
-      "name": "initializing-claude-md",
-      "path": "skills/general/initializing-claude-md",
+      "name": "initing-claude",
+      "path": "skills/general/initing-claude",
       "description": "Generates or hardens a project's CLAUDE.md by analyzing the actual codebase and fetching current official documentation for whatever tech stack it detects — architecture, conventions, and strict, specific Do/Don't rules grounded in real fetched docs, never memorized knowledge."
     }
   ]

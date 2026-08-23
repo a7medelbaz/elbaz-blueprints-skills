@@ -1,5 +1,5 @@
 ---
-name: initializing-claude-md
+name: initing-claude
 description: Generates or hardens a project's CLAUDE.md by analyzing the actual codebase and fetching current official documentation for whatever tech stack it detects — architecture, conventions, and strict, specific Do/Don't rules grounded in real fetched docs, never memorized knowledge. Use when initializing a new project's CLAUDE.md, adding a rule after Claude made a mistake, or setting up AI coding guardrails for any language or framework.
 ---
 
