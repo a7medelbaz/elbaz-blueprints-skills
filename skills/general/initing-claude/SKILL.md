@@ -18,9 +18,22 @@ Never regenerate an existing `CLAUDE.md` wholesale — a human may have hand-edi
 
 **Every claim in the output must be traceable to something you actually did this run** — either a pattern you actually observed in this codebase (via `Read`/`Grep`/`Glob`), or content actually returned by a `WebFetch` call you actually made. Never write a rule because it "sounds right for this framework" from training data. A confidently wrong rule is worse than no rule — this is the single most important constraint in this skill. Before presenting the finished file, re-read every `Do`/`Don't` line and ask: *which specific observation or fetched page does this come from?* If you can't answer that, delete the line.
 
+## Write instructions Claude will actually follow
+
+CLAUDE.md content is delivered as a user message after the system prompt, not enforced configuration — Claude reads it and tries to comply, but nothing forces it the way a hook does. How each line is written changes how reliably it's followed:
+
+- **Size.** Keep the whole file under ~200 lines. Longer files consume more context and measurably reduce adherence — Claude starts missing rules once the file is bloated. If content keeps growing, don't keep appending: move file-type-specific rules into `.claude/rules/<topic>.md` (scoped with `paths:` frontmatter so they only load for matching files), and move multi-step procedures into a skill (loaded on demand, not every session).
+- **Specificity.** "Use 2-space indentation" survives; "format code properly" doesn't — a rule Claude can't check against, it can't reliably follow. Every `Do`/`Don't` line should describe something a reviewer could point at in a diff and call pass or fail. Where a rule can be tied to a concrete check — a test command, a lint command, a build step — prefer that over a bare style preference: "Run `npm test` before committing" over "test your changes."
+- **A reason, briefly.** Claude generalizes better from a rule that states *why* than from a bare prohibition — one clause is enough ("...because it breaks hot reload", "...to match the existing repository pattern"), not a paragraph. Skip the reason only when the rule is already self-evidently checkable on its own.
+- **State the action, not just the ban.** Where both are equally clear, prefer "Use BLoC for state" over "Don't use setState" — Claude follows positive instructions more reliably than pure prohibitions.
+- **Spend emphasis carefully.** Reserve "IMPORTANT" or similar for the one or two lines that truly need it. Emphasizing everything means nothing stands out.
+- **Reference instead of duplicating.** If the project already has a README, `AGENTS.md`, or package manifest documenting something, pull it in with `@path/to/file` syntax rather than retyping its content. Imports still load into context at launch — this isn't a token-savings trick — but it keeps one source of truth instead of a copy that drifts the moment the original changes.
+
 ## Init workflow
 
 ### 1. Detect the stack
+
+Also check for an existing `AGENTS.md`, `.cursor/rules/`/`.cursorrules`, or `.github/copilot-instructions.md` — Claude Code doesn't read any of these directly. If `AGENTS.md` exists, don't duplicate it: write `CLAUDE.md` as `@AGENTS.md` followed by a `## Claude Code` section for anything Claude-specific, the pattern Claude Code's own docs recommend. If only Cursor/Copilot rule files exist, fold their relevant parts into the sections below instead, the same way the built-in `/init` does.
 
 Look for marker files at the project root:
 
@@ -75,9 +88,21 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 [...]
 ```
 
+**What belongs in each section** — Claude Code's own docs draw this line explicitly; apply it to every section, not just `Do`/`Don't`:
+
+| ✅ Include | ❌ Exclude |
+|---|---|
+| Commands Claude can't guess (build, test, lint, single-test invocation) | Anything Claude can figure out by reading the code |
+| Conventions that differ from the language/framework's own defaults | Standard conventions Claude already knows |
+| Architectural decisions specific to this project | File-by-file descriptions of the codebase |
+| Repository etiquette (branch naming, PR/commit conventions) | Information that changes frequently |
+| Environment quirks (required env vars, non-obvious setup steps) | Self-evident practices ("write clean code", "handle errors") |
+| Non-obvious gotchas a new contributor would hit | Long explanations or tutorials — link out instead |
+
 **Do/Don't rules — the part that matters most:**
 
 - Every rule is **specific and checkable**, never vague encouragement. `Don't use setState — use BLoC only` is a good rule: binary, enforceable, unambiguous. `Follow modern best practices` is not a rule, it's filler — delete it.
+- Apply the instruction-writing discipline from [Write instructions Claude will actually follow](#write-instructions-claude-will-actually-follow): a brief reason on non-obvious rules, positive framing where it's equally clear, sparing emphasis.
 - Stack-specific rules come from what step 2 actually fetched, or a pattern step 3 actually found — cite which, mentally, before writing each one (see [the governing rule](#the-rule-that-governs-everything-below)).
 - Always include a baseline layer of universal engineering discipline, phrased for the detected language/stack rather than generically:
   - Single responsibility — a function/class does one thing
@@ -85,7 +110,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   - Catch specific exception/error types, never a bare catch-all
   - No magic numbers/strings without a named constant
   - No new dependency without a stated reason
-- Keep the whole file scannable — this is a guardrail document a human and an AI both read before every session, not a reference manual. If a `Do`/`Don't` list is getting long, that's a sign some items belong in `Conventions` instead.
+- Keep the whole file scannable — this is a guardrail document a human and an AI both read before every session, not a reference manual. If a `Do`/`Don't` list is getting long, that's a sign some items belong in `Conventions`, a path-scoped rule, or a skill instead (see the size guidance above).
+
+Before presenting the file, count its lines. Over ~200? Trim per the size guidance above rather than shipping a file Claude will only partially read.
 
 ## Update workflow
 
@@ -93,10 +120,19 @@ This implements the iterative-improvement cycle: write rules → work with the A
 
 1. Read the existing `CLAUDE.md` in full.
 2. Ask the user: **what mistake or pattern just happened that this should prevent next time?**
-3. Decide which section the new rule belongs in — almost always `Do` or `Don't`; occasionally `Conventions` if it's about a pattern rather than a hard rule.
-4. If the rule is stack-specific and you're not confident about the correct current API/pattern, fetch it first (steps 1-2 of the Init workflow) rather than guessing — the governing rule above applies here too.
-5. Append **exactly one** new line to the right section. Do not touch any other line, section, or ordering. Do not "clean up" or rewrite existing content while you're in there — that's a different task the user hasn't asked for.
-6. Show the user the diff (just the new line), not the whole file.
+3. Decide whether CLAUDE.md is even the right mechanism for this fix — it's advisory, not enforced:
+
+   | The fix needs to... | Use instead |
+   |---|---|
+   | Happen every time, with zero exceptions (e.g. a command that must run before every commit) | A hook — CLAUDE.md is advisory, hooks are enforced regardless of what Claude decides |
+   | Apply only to certain file types or directories | A path-scoped rule in `.claude/rules/` (`paths:` frontmatter) |
+   | Cover a multi-step procedure that's only relevant sometimes | A skill, loaded on demand |
+   | Be a standing behavioral rule relevant to every session | CLAUDE.md — continue to step 4 |
+
+4. Decide which section the new rule belongs in — almost always `Do` or `Don't`; occasionally `Conventions` if it's about a pattern rather than a hard rule.
+5. If the rule is stack-specific and you're not confident about the correct current API/pattern, fetch it first (steps 1-2 of the Init workflow) rather than guessing — the governing rule above applies here too.
+6. Append **exactly one** new line to the right section, written per [Write instructions Claude will actually follow](#write-instructions-claude-will-actually-follow) — specific, checkable, with a brief reason if it's not self-evident. Do not touch any other line, section, or ordering. Do not "clean up" or rewrite existing content while you're in there — that's a different task the user hasn't asked for.
+7. Show the user the diff (just the new line), not the whole file.
 
 ## Anti-patterns — don't do these
 
@@ -105,3 +141,5 @@ This implements the iterative-improvement cycle: write rules → work with the A
 - Copying this skill's own illustrative example rules (e.g. from a Flutter project) into an unrelated project's file — every rule must come from *that* project's actual stack and code
 - Adding a section beyond the fixed six, or renaming one
 - Writing a rule that isn't checkable ("write good code," "be careful with state") — if you can't imagine how someone would verify a violation, it doesn't belong
+- Appending a rule to CLAUDE.md for something that should be a hook (must-happen-every-time, no exceptions) or a skill (multi-step, only occasionally relevant) instead
+- Letting the file grow past ~200 lines instead of splitting into `.claude/rules/` or a skill

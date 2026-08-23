@@ -7,6 +7,8 @@ This is the human-readable version of what the skill at [`skills/general/initing
 - Two modes, chosen automatically
 - How it avoids the thing that makes AI-generated docs untrustworthy
 - The template it always produces
+- Writing instructions Claude actually follows
+- Picking the right mechanism, not just CLAUDE.md
 - What it deliberately does *not* do
 - Where to go for more depth
 
@@ -60,6 +62,29 @@ Exactly six sections, every time — no more, no fewer:
 `Project Overview` through `Conventions` come from what it actually finds in your repo. `Do`/`Don't` is where the fetched-docs discipline matters most — every rule is meant to be **specific and checkable**, not encouragement. `Don't use setState — use BLoC only` is the shape of rule this skill aims for: binary, enforceable, impossible to accidentally violate without noticing. `Follow modern best practices` is the shape it's built to avoid — that's filler, not a rule.
 
 Underneath whatever's stack-specific, it always adds a baseline layer of universal engineering discipline — single responsibility, no dead code, specific exception types instead of bare catches, no magic numbers, no new dependency without a reason — phrased for whatever language it's writing for rather than left generic.
+
+## Writing instructions Claude actually follows
+
+A `CLAUDE.md` isn't enforced configuration — it's a message Claude reads and tries to comply with, same as any other instruction, so how a rule is phrased changes how reliably it lands. The skill applies Claude Code's own documented guidance on this:
+
+- **Keep it under ~200 lines.** Longer files measurably reduce how well Claude follows them. Growing past that isn't a reason to keep appending — it's a signal to split: file-type-specific rules move to `.claude/rules/` (loaded only for matching files), multi-step procedures move to a skill (loaded on demand).
+- **Make every rule checkable.** `Use 2-space indentation` survives; `format code properly` doesn't, because there's nothing to verify a violation against.
+- **Give non-obvious rules a one-clause reason.** Claude generalizes better from a rule that says *why* than from a bare prohibition — this is a general prompting effect, not specific to CLAUDE.md.
+- **State the action, not just the ban**, where both are equally clear — Claude follows positive instructions more reliably than pure prohibitions.
+- **Don't duplicate a README or `AGENTS.md`.** Pull it in with `@path/to/file` instead of retyping it, so there's one source of truth instead of a copy that drifts.
+
+## Picking the right mechanism, not just CLAUDE.md
+
+Not every fix belongs in `CLAUDE.md`. Before adding a rule in Update mode, the skill checks what kind of fix is actually needed:
+
+| The fix needs to... | Use instead |
+|---|---|
+| Happen every time, with zero exceptions | A hook — deterministic, unlike CLAUDE.md's advisory rules |
+| Apply only to certain file types or directories | A path-scoped rule in `.claude/rules/` |
+| Cover a multi-step procedure that's only occasionally relevant | A skill |
+| Be a standing behavioral rule relevant to every session | `CLAUDE.md` |
+
+This keeps `CLAUDE.md` from becoming a dumping ground for things a different mechanism would handle more reliably.
 
 ## What it deliberately does *not* do
 

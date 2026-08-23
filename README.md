@@ -96,10 +96,11 @@ Full usage: [skills/flutter/bootstrapping-flutter-mvvm/SKILL.md](skills/flutter/
 Why it matters: a `CLAUDE.md` is only as good as it is specific and current — generic advice ("write clean code," "follow best practices") is worthless, and rules copied from a framework's docs six months ago are actively wrong once that framework moves on. This skill fixes both problems at generation time, for any stack, not just the ones it ships examples for.
 
 **Does:**
-- Detects the project's stack from its manifest file (`pubspec.yaml`, `package.json`, `requirements.txt`, `go.mod`, `Gemfile`, `composer.json`, `pom.xml`/`build.gradle`, `*.csproj`, `Cargo.toml`, `mix.exs`, ...) — and for JS/Python in particular, inspects dependencies to identify the actual framework (React vs. Next.js vs. Vue, Django vs. Flask vs. FastAPI, etc.)
+- Detects the project's stack from its manifest file (`pubspec.yaml`, `package.json`, `requirements.txt`, `go.mod`, `Gemfile`, `composer.json`, `pom.xml`/`build.gradle`, `*.csproj`, `Cargo.toml`, `mix.exs`, ...) — and for JS/Python in particular, inspects dependencies to identify the actual framework (React vs. Next.js vs. Vue, Django vs. Flask vs. FastAPI, etc.); also checks for an existing `AGENTS.md`/Cursor/Copilot rules and imports rather than duplicates them
 - Fetches that framework's **current** official docs — a built-in map of known doc roots for common stacks, falling back to a live search for anything not in the map
 - Writes `CLAUDE.md` in a fixed six-section template (Project Overview, Architecture, Tech Stack, Conventions, Do, Don't) — every `Do`/`Don't` rule traceable to something it actually found in the codebase or actually fetched, never asserted from memory
-- On a project that **already has** a `CLAUDE.md`, switches to update mode: asks what mistake just happened, adds exactly one new rule, and touches nothing else — this is the "notice a mistake → add a rule" loop, built into the skill instead of done by hand
+- Writes every rule the way Claude Code's own docs say actually gets followed: under ~200 lines total, checkable rather than vague, a one-clause reason on non-obvious rules, emphasis spent sparingly
+- On a project that **already has** a `CLAUDE.md`, switches to update mode: asks what mistake just happened, picks the right mechanism (CLAUDE.md rule vs. a hook vs. a path-scoped rule vs. a skill), adds exactly one new line if CLAUDE.md is the right fit, and touches nothing else — this is the "notice a mistake → add a rule" loop, built into the skill instead of done by hand
 
 Full plain-language explanation of everything this skill does: [`guides/general/initing-claude/README.md`](guides/general/initing-claude/README.md)
 
