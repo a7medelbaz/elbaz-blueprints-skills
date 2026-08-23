@@ -35,7 +35,7 @@ Two things to ask about before step 1, if unclear:
 - **Routing:** named routes (simple, no deep links) or `go_router` (deep linking, web, nested nav)? See [reference/routing.md](reference/routing.md).
 - **Fonts:** which font family per language, for locale-aware font switching? Default: Tajawal (`ar`) / Manrope (`en`) — omit `--fonts` entirely to use this default, or pass `--fonts=ar:Tajawal,en:Manrope,fr:SomeFont` for a different mapping. See [reference/theming.md](reference/theming.md#fonts).
 
-After applying, the project has `core/config`, `core/di`, `core/router`, `core/error`, `core/theme` (a full shade-scale palette, a fixed size × weight text-style matrix, and fully themed light/dark `ThemeData` — not placeholders), `core/utils`, `lib/app.dart`, `lib/main_dev.dart`, `lib/main_prod.dart`, Android flavors, CI workflow, Makefile, `.env`, and a wired `assets/` tree. Full tree: [reference/conventions.md](reference/conventions.md#target-project-structure).
+After applying, the project has `core/config`, `core/di`, `core/router`, `core/error`, `core/theme` (a full shade-scale palette, a fixed size × weight text-style matrix, and fully themed light/dark `ThemeData` — not placeholders), `core/utils`, `lib/app.dart`, `lib/main_dev.dart`, `lib/main_prod.dart`, Android flavors, Makefile, `.env`, and a wired `assets/` tree. Full tree: [reference/conventions.md](reference/conventions.md#target-project-structure).
 
 ## Scaffolding a feature
 

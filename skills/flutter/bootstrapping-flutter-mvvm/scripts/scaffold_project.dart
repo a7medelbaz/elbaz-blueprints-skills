@@ -179,7 +179,6 @@ void main(List<String> args) async {
   }
   await _patchAndroidManifestLabel(projectName);
 
-  await _writeFile('$projectName/.github/workflows/flutter-ci.yml', _ciWorkflow);
   await _writeFile('$projectName/Makefile', _makefile);
 
   final packagesToAdd = [...requiredPackages];
@@ -1513,28 +1512,6 @@ dependencies {
 flutter {
     source = "../.."
 }
-''';
-
-const _ciWorkflow = '''
-name: Flutter CI
-
-on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: subosito/flutter-action@v2
-        with:
-          channel: stable
-      - run: flutter pub get
-      - run: flutter analyze
-      - run: flutter test
 ''';
 
 const _makefile = '''
