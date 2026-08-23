@@ -1,5 +1,5 @@
 // Scaffolds a Flutter project with MVVM + BLoC (Cubit) architecture.
-// Usage: dart run <skill_dir>/scripts/scaffold_project.dart <project_name>
+// Usage: dart run <path-to-skill>/scripts/scaffold_project.dart <project_name>
 //          --routing=named|go_router [--dry-run]
 //
 // Run from the directory that should CONTAIN the project folder (the project's
@@ -24,7 +24,7 @@ const requiredPackages = [
 ];
 
 const _usage =
-    'Usage: dart run <skill_dir>/scripts/scaffold_project.dart <project_name> '
+    'Usage: dart run <path-to-skill>/scripts/scaffold_project.dart <project_name> '
     '--routing=named|go_router [--dry-run]';
 
 /// When true, nothing is written and no external command runs — every action

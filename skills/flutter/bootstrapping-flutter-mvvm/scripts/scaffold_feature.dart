@@ -2,14 +2,14 @@
 // it does NOT write repo/cubit/state/screen file contents — Claude writes
 // those afterward, sized to what the feature actually needs (see SKILL.md).
 //
-// Usage: dart run <skill_dir>/scripts/scaffold_feature.dart <feature_name>
+// Usage: dart run <path-to-skill>/scripts/scaffold_feature.dart <feature_name>
 // Run from the PROJECT ROOT (it writes lib/features/<name>/). Contrast
 // scaffold_project.dart, which runs from the project's parent directory.
 import 'dart:io';
 
 void main(List<String> args) async {
   if (args.isEmpty) {
-    stderr.writeln('Usage: dart run <skill_dir>/scripts/scaffold_feature.dart <feature_name>');
+    stderr.writeln('Usage: dart run <path-to-skill>/scripts/scaffold_feature.dart <feature_name>');
     exit(1);
   }
 
