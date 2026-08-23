@@ -30,6 +30,13 @@ elbaz-blueprints/
 ├── docs/                   ← internal guides for building skills in this repo
 │   ├── CREATE_SKILL.md
 │   └── SKILL_PROMPT.md
+├── guides/                 ← human-readable explainers (not read by Claude, written for people browsing this repo)
+│   ├── flutter/
+│   │   └── bootstrapping-flutter-mvvm/
+│   │       ├── README.md    ← everything the skill does, in plain language
+│   │       └── flavors.md
+│   └── odoo/
+│       └── (coming soon)
 └── skills/
     ├── flutter/
     │   └── bootstrapping-flutter-mvvm/
@@ -61,7 +68,9 @@ Why it matters: turns a blank Flutter project into a production-ready MVVM + BLo
 - Assets — `images/`/`svgs/`/`translations/` registered folder-level in `pubspec.yaml`; fonts registered per-family with real `Regular`/`Bold` entries (the actual `.ttf` files are a manual download-and-place step — see the skill's `theming.md#fonts`)
 - Localization via `easy_localization`, wired end-to-end
 - Error handling (`AppError` / `ErrorHandler`)
-- Android dev/prod flavors, `.env` config, Makefile
+- Android dev/prod flavors ([how they work, and the tradeoffs vs. a JSON/YAML-driven approach](guides/flutter/bootstrapping-flutter-mvvm/flavors.md)), `.env` config, Makefile
+
+Full plain-language explanation of everything this skill does: [`guides/flutter/bootstrapping-flutter-mvvm/README.md`](guides/flutter/bootstrapping-flutter-mvvm/README.md)
 
 **Use it effectively:**
 - Always run `--dry-run` first — it reports what exists and what's missing, writes nothing
