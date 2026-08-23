@@ -1,0 +1,11 @@
+{
+  "name": "elbaz-blueprints",
+  "description": "Ahmed Elbaz's personal library of agent skills — scaffolding, conventions, and workflows for Flutter, Odoo, and more.",
+  "skills": [
+    {
+      "name": "scaffolding-flutter-mvvm",
+      "path": "skills/flutter/scaffolding-flutter-mvvm",
+      "description": "Scaffolds Flutter projects with MVVM + BLoC (Cubit) architecture — core infrastructure, feature skeletons, Android dev/production flavors, DI with get_it, routing, error handling, and theming."
+    }
+  ]
+}
