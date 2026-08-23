@@ -1,5 +1,5 @@
 ---
-name: scaffolding-flutter-mvvm
+name: bootstrapping-flutter-mvvm
 description: Scaffolds Flutter projects with MVVM + BLoC (Cubit) architecture — core infrastructure, feature skeletons, Android dev/production flavors, DI with get_it, routing, error handling, and theming. Use when starting a new Flutter project, setting up Flutter MVVM/BLoC architecture from scratch, or adding a new feature to an existing MVVM Flutter project.
 ---
 

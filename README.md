@@ -10,10 +10,10 @@ Ahmed Elbaz's personal library of [agent skills](https://skills.sh), distributed
 npx skills add ahmed-elbaz/elbaz-blueprints
 
 # Install one specific skill
-npx skills add ahmed-elbaz/elbaz-blueprints --skill scaffolding-flutter-mvvm
+npx skills add ahmed-elbaz/elbaz-blueprints --skill bootstrapping-flutter-mvvm
 
 # Install for a specific agent
-npx skills add ahmed-elbaz/elbaz-blueprints --skill scaffolding-flutter-mvvm --agent claude-code
+npx skills add ahmed-elbaz/elbaz-blueprints --skill bootstrapping-flutter-mvvm --agent claude-code
 
 # Install globally
 npx skills add ahmed-elbaz/elbaz-blueprints --global
@@ -32,7 +32,7 @@ elbaz-blueprints/
 │   └── SKILL_PROMPT.md
 └── skills/
     ├── flutter/
-    │   └── scaffolding-flutter-mvvm/
+    │   └── bootstrapping-flutter-mvvm/
     │       ├── SKILL.md
     │       ├── reference/
     │       └── scripts/
@@ -44,7 +44,7 @@ elbaz-blueprints/
 
 | Skill | Domain | Description |
 |---|---|---|
-| [scaffolding-flutter-mvvm](skills/flutter/scaffolding-flutter-mvvm/SKILL.md) | Flutter | Scaffolds Flutter projects with MVVM + BLoC (Cubit) architecture — core infrastructure, feature skeletons, Android flavors, DI, routing, error handling, and theming. |
+| [bootstrapping-flutter-mvvm](skills/flutter/bootstrapping-flutter-mvvm/SKILL.md) | Flutter | Scaffolds Flutter projects with MVVM + BLoC (Cubit) architecture — core infrastructure, feature skeletons, Android flavors, DI, routing, error handling, and theming. |
 
 ## Adding a new skill
 
