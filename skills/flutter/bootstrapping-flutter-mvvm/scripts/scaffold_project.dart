@@ -25,7 +25,13 @@ const requiredPackages = [
 
 const _usage =
     'Usage: dart run <path-to-skill>/scripts/scaffold_project.dart <project_name> '
-    '--routing=named|go_router [--dry-run]';
+    '--routing=named|go_router [--fonts=lang:Family,...] [--dry-run]';
+
+// Language code -> font family. Order matters: the first entry becomes
+// AppFonts.fallback (used for any language not explicitly listed) — 'en'
+// listed first so unlisted languages (mostly Latin-script) fall back to
+// Manrope, not Tajawal.
+const _defaultFonts = {'en': 'Manrope', 'ar': 'Tajawal'};
 
 /// When true, nothing is written and no external command runs — every action
 /// is only recorded and reported. Set once from --dry-run in main().
@@ -61,6 +67,9 @@ void main(List<String> args) async {
     stderr.writeln("Error: --routing must be 'named' or 'go_router', got '$routing'.");
     exit(1);
   }
+
+  final fontsArg = args.firstWhere((a) => a.startsWith('--fonts='), orElse: () => '');
+  final fonts = fontsArg.isEmpty ? _defaultFonts : _parseFonts(fontsArg.substring('--fonts='.length));
 
   // A dry run only reads the filesystem, so it stays useful without the SDK —
   // warn rather than exit, or you can't inspect a project until Flutter is set up.
@@ -119,6 +128,7 @@ void main(List<String> args) async {
   await _writeFile('$libDir/core/utils/extensions/context_ext.dart', _contextExt(routing));
   await _writeFile('$libDir/core/theme/app_colors.dart', _appColors);
   await _writeFile('$libDir/core/theme/app_text_styles.dart', _appTextStyles);
+  await _writeFile('$libDir/core/theme/app_fonts.dart', _appFonts(fonts));
   await _writeFile('$libDir/core/theme/custom_colors.dart', _customColors);
   await _writeFile('$libDir/core/theme/theme_data/theme_data_light.dart', _themeDataLight);
   await _writeFile('$libDir/core/theme/theme_data/theme_data_dark.dart', _themeDataDark);
@@ -149,6 +159,7 @@ void main(List<String> args) async {
   await _writeFile('$projectName/assets/fonts/.gitkeep', '');
   await _writeFile('$projectName/assets/translations/en.json', _translationsEn);
   await _ensurePubspecAssets(projectName);
+  await _ensurePubspecFonts(projectName, fonts);
 
   // `flutter create` always generates a stock build.gradle.kts before this
   // point, so for a brand-new project this MUST force-overwrite or the
@@ -211,6 +222,31 @@ Future<List<String>> _missingPackages(String projectName, List<String> required)
 Future<ProcessResult> _flutter(List<String> args, {String? workingDirectory}) =>
     Process.run('flutter', args, runInShell: true, workingDirectory: workingDirectory);
 
+// Parses "ar:Tajawal,en:Manrope" into {'ar': 'Tajawal', 'en': 'Manrope'}.
+// Map insertion order is preserved, so the first pair becomes AppFonts.fallback.
+Map<String, String> _parseFonts(String arg) {
+  final result = <String, String>{};
+  for (final pair in arg.split(',')) {
+    final parts = pair.split(':');
+    if (parts.length != 2 ||
+        !RegExp(r'^[a-z]{2,3}$').hasMatch(parts[0]) ||
+        !RegExp(r'^[A-Za-z][A-Za-z0-9 ]*$').hasMatch(parts[1])) {
+      stderr.writeln(
+        "Error: --fonts entry '$pair' is invalid. "
+        'Use lang:FamilyName, e.g. --fonts=ar:Tajawal,en:Manrope '
+        '(lang = 2-3 lowercase letters, FamilyName = letters/digits/spaces starting with a letter).',
+      );
+      exit(1);
+    }
+    result[parts[0]] = parts[1];
+  }
+  if (result.isEmpty) {
+    stderr.writeln('Error: --fonts was given but no valid lang:Family pairs were found.');
+    exit(1);
+  }
+  return result;
+}
+
 Future<bool> _checkFlutterInstalled() async {
   try {
     final result = await _flutter(['--version']);
@@ -250,13 +286,26 @@ Future<void> _ensureGitignoreHasEnv(String projectName) async {
   }
 }
 
+// Match unindented 'flutter:' only — a stock pubspec.yaml also has an
+// INDENTED 'flutter:' under dependencies: (the SDK dependency declaration).
+// Matching on l.trim() finds that one first and corrupts the dependencies
+// block, which crashes `flutter pub add` on the resulting malformed YAML.
+// Top-level YAML keys are always at column 0, so no leading whitespace is
+// correct — but trimRight (not trim) is required: pubspec.yaml has CRLF
+// line endings, and split('\n') leaves a trailing '\r' on every line that
+// a bare `==` comparison would otherwise fail to match.
+// Shared by _ensurePubspecAssets and _ensurePubspecFonts so this fix lives
+// in exactly one place.
+int _findFlutterSectionIndex(List<String> lines) =>
+    lines.indexWhere((l) => l.trimRight() == 'flutter:');
+
 // Registers every scaffolded asset folder under `flutter: assets:` in one
 // pass, folder-level (trailing slash) rather than file-by-file, so pubspec.yaml
 // stays a fixed 5-line block no matter how many images/svgs get dropped in
 // later. Flutter only bundles files *directly* inside a folder-level entry
 // (not nested subfolders), which matches this flat images/svgs/translations
-// layout. Fonts are NOT listed here — `fonts:` is a separate pubspec.yaml
-// section keyed by font family, which can't be inferred from an empty folder.
+// layout. Fonts are handled separately by _ensurePubspecFonts — `fonts:` is
+// keyed by family name, not by folder, so it can't share this entry list.
 Future<void> _ensurePubspecAssets(String projectName) async {
   const assetEntries = [
     '.env',
@@ -278,26 +327,19 @@ Future<void> _ensurePubspecAssets(String projectName) async {
   }
   final lines = (await pubspec.readAsString()).split('\n');
 
-  final flutterIdx = lines.indexWhere((l) => l.trim() == 'flutter:');
+  final flutterIdx = _findFlutterSectionIndex(lines);
   if (flutterIdx == -1) {
     stderr.writeln('  ! No `flutter:` section found in pubspec.yaml — add ${assetEntries.join(', ')} under assets manually.');
     return;
   }
 
   final missing = assetEntries.where((e) => !lines.any((l) => l.trim() == '- $e')).toList();
-  final needsFontsTemplate = !lines.any((l) => l.trim() == '# fonts:');
-
-  if (missing.isEmpty && !needsFontsTemplate) {
+  if (missing.isEmpty) {
     skipped.add('$projectName/pubspec.yaml (assets already registered)');
     return;
   }
   if (dryRun) {
-    if (missing.isNotEmpty) {
-      created.add('$projectName/pubspec.yaml (register assets: ${missing.join(', ')})');
-    }
-    if (needsFontsTemplate) {
-      created.add('$projectName/pubspec.yaml (add commented `# fonts:` template)');
-    }
+    created.add('$projectName/pubspec.yaml (register assets: ${missing.join(', ')})');
     return;
   }
 
@@ -311,22 +353,60 @@ Future<void> _ensurePubspecAssets(String projectName) async {
     lines.insert(assetsIdx + 1, '    - $entry');
   }
 
-  // Leaves a template for the one section that can't be auto-populated —
-  // a real font file's family name and weights aren't knowable from an
-  // empty assets/fonts/ folder, so this is deliberately commented out.
-  if (needsFontsTemplate) {
-    final fontsBlockIdx = lines.indexWhere((l) => l.trim() == 'assets:', flutterIdx);
-    var insertAt = fontsBlockIdx + 1;
-    while (insertAt < lines.length && lines[insertAt].trim().startsWith('- ')) {
-      insertAt++;
+  await pubspec.writeAsString(lines.join('\n'));
+}
+
+// Registers a real (uncommented) `fonts:` entry per DISTINCT family in the
+// language->family map — Tajawal only appears once even if two languages
+// mapped to it. Idempotent per family, not as one blanket flag, so scaffolding
+// with a newly added language later inserts only the new family's entry.
+// The .ttf files themselves are never fetched (binary, no network) — this
+// only registers the filenames the project is expected to provide.
+Future<void> _ensurePubspecFonts(String projectName, Map<String, String> fonts) async {
+  final families = fonts.values.toSet().toList()..sort();
+
+  final pubspec = File('$projectName/pubspec.yaml');
+  if (!await pubspec.exists()) {
+    if (dryRun) {
+      created.add('$projectName/pubspec.yaml (register fonts: ${families.join(', ')})');
+      return;
     }
-    lines.insertAll(insertAt, [
-      '  # fonts:',
-      '  #   - family: YourFontFamily',
-      '  #     fonts:',
-      '  #       - asset: assets/fonts/YourFont-Regular.ttf',
-      '  #       - asset: assets/fonts/YourFont-Bold.ttf',
-      '  #         weight: 700',
+    stderr.writeln('  ! pubspec.yaml not found — register fonts: ${families.join(', ')} manually.');
+    return;
+  }
+  final lines = (await pubspec.readAsString()).split('\n');
+
+  final flutterIdx = _findFlutterSectionIndex(lines);
+  if (flutterIdx == -1) {
+    stderr.writeln('  ! No `flutter:` section found in pubspec.yaml — add fonts: ${families.join(', ')} manually.');
+    return;
+  }
+
+  final missing = families.where((f) => !lines.any((l) => l.trim() == '- family: $f')).toList();
+  if (missing.isEmpty) {
+    skipped.add('$projectName/pubspec.yaml (fonts already registered)');
+    return;
+  }
+  if (dryRun) {
+    created.add('$projectName/pubspec.yaml (register fonts: ${missing.join(', ')})');
+    return;
+  }
+
+  var fontsIdx = lines.indexWhere((l) => l.trim() == 'fonts:', flutterIdx);
+  if (fontsIdx == -1) {
+    lines.insert(flutterIdx + 1, '  fonts:');
+    fontsIdx = flutterIdx + 1;
+  }
+
+  // Insert each missing family right after `fonts:` — order among families
+  // doesn't matter to Flutter, only that each appears exactly once.
+  for (final family in missing) {
+    lines.insertAll(fontsIdx + 1, [
+      '    - family: $family',
+      '      fonts:',
+      '        - asset: assets/fonts/$family-Regular.ttf',
+      '        - asset: assets/fonts/$family-Bold.ttf',
+      '          weight: 700',
     ]);
   }
 
@@ -392,11 +472,13 @@ void _printSummary(String routing, List<String> packages) {
   print('  1. Fill in the real base URL in .env (BASE_URL=...)');
   print('  2. Fill in TODOs in core/theme/* with your real palette/type scale');
   print('  3. Register your first repo/cubit in core/di/dependency_injection.dart');
-  print('  4. Drop real files into assets/images/, assets/svgs/, assets/fonts/ — '
-      'images/svgs are already registered in pubspec.yaml; for fonts, uncomment '
-      'and fill in the `# fonts:` template pubspec.yaml left for you');
-  print('  5. Add more locales by creating assets/translations/<locale>.json '
-      'and adding it to supportedLocales in main_dev.dart / main_prod.dart');
+  print('  4. Drop real files into assets/images/, assets/svgs/ — already registered in pubspec.yaml');
+  print('  5. Download the registered font families from fonts.google.com and place them in '
+      'assets/fonts/ — filenames must match what pubspec.yaml now lists under fonts: '
+      '(e.g. Tajawal-Regular.ttf, Tajawal-Bold.ttf)');
+  print('  6. Add more locales by creating assets/translations/<locale>.json, adding it to '
+      'supportedLocales in main_dev.dart / main_prod.dart, and mapping it in AppFonts.byLanguage '
+      'if it needs a font other than AppFonts.fallback');
 }
 
 // ---------------------------------------------------------------------------
@@ -553,13 +635,62 @@ $navHelpers
 const _appColors = '''
 import 'package:flutter/material.dart';
 
+// TODO: replace every shade below with the project's real palette. The scale
+// shape (50 lightest -> 900 darkest) is the reusable part; the values are not.
 class AppColors {
   AppColors._();
 
-  // TODO: replace with the project's real palette
-  static const Color primary = Color(0xFF1E88E5);
-  static const Color secondary = Color(0xFF26A69A);
-  static const Color error = Color(0xFFD32F2F);
+  static const Color primary50 = Color(0xFFE3F2FD);
+  static const Color primary100 = Color(0xFFBBDEFB);
+  static const Color primary200 = Color(0xFF90CAF9);
+  static const Color primary300 = Color(0xFF64B5F6);
+  static const Color primary400 = Color(0xFF42A5F5);
+  static const Color primary500 = Color(0xFF2196F3);
+  static const Color primary600 = Color(0xFF1E88E5);
+  static const Color primary700 = Color(0xFF1976D2);
+  static const Color primary800 = Color(0xFF1565C0);
+  static const Color primary900 = Color(0xFF0D47A1);
+
+  static const Color secondary50 = Color(0xFFE0F2F1);
+  static const Color secondary100 = Color(0xFFB2DFDB);
+  static const Color secondary200 = Color(0xFF80CBC4);
+  static const Color secondary300 = Color(0xFF4DB6AC);
+  static const Color secondary400 = Color(0xFF26A69A);
+  static const Color secondary500 = Color(0xFF009688);
+  static const Color secondary600 = Color(0xFF00897B);
+  static const Color secondary700 = Color(0xFF00796B);
+  static const Color secondary800 = Color(0xFF00695C);
+  static const Color secondary900 = Color(0xFF004D40);
+
+  static const Color grey50 = Color(0xFFFAFAFA);
+  static const Color grey100 = Color(0xFFF5F5F5);
+  static const Color grey200 = Color(0xFFEEEEEE);
+  static const Color grey300 = Color(0xFFE0E0E0);
+  static const Color grey400 = Color(0xFFBDBDBD);
+  static const Color grey500 = Color(0xFF9E9E9E);
+  static const Color grey600 = Color(0xFF757575);
+  static const Color grey700 = Color(0xFF616161);
+  static const Color grey800 = Color(0xFF424242);
+  static const Color grey900 = Color(0xFF212121);
+
+  static const Color red50 = Color(0xFFFFEBEE);
+  static const Color red100 = Color(0xFFFFCDD2);
+  static const Color red200 = Color(0xFFEF9A9A);
+  static const Color red300 = Color(0xFFE57373);
+  static const Color red400 = Color(0xFFEF5350);
+  static const Color red500 = Color(0xFFF44336);
+  static const Color red600 = Color(0xFFE53935);
+  static const Color red700 = Color(0xFFD32F2F);
+  static const Color red800 = Color(0xFFC62828);
+  static const Color red900 = Color(0xFFB71C1C);
+
+  // Sized to exactly what CustomColors.success needs (light/dark) — not a
+  // full scale, since nothing else in the scaffold references a green shade.
+  static const Color green200 = Color(0xFFA5D6A7);
+  static const Color green700 = Color(0xFF388E3C);
+
+  static const Color backgroundLight = Color(0xFFFFFFFF);
+  static const Color backgroundDark = Color(0xFF121212);
   static const Color white = Color(0xFFFFFFFF);
   static const Color black = Color(0xFF000000);
 }
@@ -569,29 +700,70 @@ const _appTextStyles = '''
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-// TODO: adjust to the project's real type scale
+// Weight is the named part; size is always a parameter — call
+// AppTextStyles.extraBold(16), not a fixed per-size getter. That's what makes
+// this reusable across projects with different type scales: a project with
+// 15/18/22px sizes uses the exact same five functions as one with 14/16/28px.
+// If a project settles on named presets (e.g. `button`, `hint`), add them on
+// top as project-specific getters built from these — see reference/theming.md.
 class AppTextStyles {
   AppTextStyles._();
 
-  static TextStyle get heading1 => TextStyle(fontSize: 28.sp, fontWeight: FontWeight.bold);
-  static TextStyle get body => TextStyle(fontSize: 14.sp, fontWeight: FontWeight.normal);
-  static TextStyle get caption => TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w300);
+  static TextStyle _base(double size, FontWeight weight) =>
+      TextStyle(fontSize: size.sp, fontWeight: weight);
+
+  static TextStyle extraBold(double size) => _base(size, FontWeight.w800);
+  static TextStyle bold(double size) => _base(size, FontWeight.w700);
+  static TextStyle medium(double size) => _base(size, FontWeight.w500);
+  static TextStyle regular(double size) => _base(size, FontWeight.w400);
+  static TextStyle light(double size) => _base(size, FontWeight.w300);
 }
 ''';
+
+// Generated from the --fonts flag (default ar:Tajawal,en:Manrope) — the
+// map below is real content baked in at scaffold time, not a placeholder.
+// AppTextStyles never sets fontFamily itself; app.dart applies this map's
+// result to the whole TextTheme so it swaps automatically on locale change
+// — see reference/theming.md#fonts for why that's the right layer for it.
+String _appFonts(Map<String, String> fonts) {
+  final entries = fonts.entries.map((e) => "    '${e.key}': '${e.value}',").join('\n');
+  final fallback = fonts.values.first;
+  return '''
+import 'package:flutter/material.dart';
+
+class AppFonts {
+  AppFonts._();
+
+  static const Map<String, String> byLanguage = {
+$entries
+  };
+
+  // Used for any language not listed in byLanguage.
+  static const String fallback = '$fallback';
+
+  static String forLocale(Locale locale) =>
+      byLanguage[locale.languageCode] ?? fallback;
+}
+''';
+}
 
 const _customColors = '''
 import 'package:flutter/material.dart';
 import 'app_colors.dart';
 
-// TODO: add semantic tokens as the project needs them
+// For colors with no Material component role (no cardTheme/dividerTheme/etc.
+// field to hold them) — e.g. "success". A color a standard component theme
+// already covers (card background, divider, icon) belongs in ThemeData
+// directly (theme_data_light.dart / theme_data_dark.dart), not here.
+// TODO: add more semantic tokens as the project needs them
 class CustomColors extends ThemeExtension<CustomColors> {
   final Color success;
   final Color cardBackground;
 
   const CustomColors({required this.success, required this.cardBackground});
 
-  static const light = CustomColors(success: Color(0xFF2E7D32), cardBackground: AppColors.white);
-  static const dark = CustomColors(success: Color(0xFF66BB6A), cardBackground: Color(0xFF1E1E1E));
+  static const light = CustomColors(success: AppColors.green700, cardBackground: AppColors.white);
+  static const dark = CustomColors(success: AppColors.green200, cardBackground: AppColors.backgroundDark);
 
   @override
   CustomColors copyWith({Color? success, Color? cardBackground}) => CustomColors(
@@ -612,27 +784,237 @@ class CustomColors extends ThemeExtension<CustomColors> {
 
 const _themeDataLight = '''
 import 'package:flutter/material.dart';
+
+import '../../utils/spacing.dart';
 import '../app_colors.dart';
+import '../app_text_styles.dart';
 import '../custom_colors.dart';
 
 ThemeData get lightTheme => ThemeData(
   brightness: Brightness.light,
-  primaryColor: AppColors.primary,
-  scaffoldBackgroundColor: AppColors.white,
+  scaffoldBackgroundColor: AppColors.backgroundLight,
   extensions: const [CustomColors.light],
+
+  // ─── Color Scheme ─────────────────────────────────────────────────────
+  colorScheme: ColorScheme.fromSeed(
+    seedColor: AppColors.primary200,
+    brightness: Brightness.light,
+    primary: AppColors.primary200,
+    onPrimary: AppColors.white,
+    secondary: AppColors.secondary200,
+    onSecondary: AppColors.white,
+    surface: AppColors.backgroundLight,
+    onSurface: AppColors.black,
+    error: AppColors.red200,
+    onError: AppColors.white,
+  ),
+
+  // ─── Text ─────────────────────────────────────────────────────────────
+  textTheme: ThemeData.light().textTheme.apply(
+    bodyColor: AppColors.black,
+    displayColor: AppColors.black,
+  ),
+
+  // ─── Elevated Button ──────────────────────────────────────────────────
+  elevatedButtonTheme: ElevatedButtonThemeData(
+    style: ElevatedButton.styleFrom(
+      backgroundColor: AppColors.primary200,
+      foregroundColor: AppColors.white,
+      disabledBackgroundColor: AppColors.grey100,
+      disabledForegroundColor: AppColors.grey400,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(rr(12)),
+      ),
+      textStyle: AppTextStyles.extraBold(16),
+    ),
+  ),
+
+  // ─── Text Button ──────────────────────────────────────────────────────
+  textButtonTheme: TextButtonThemeData(
+    style: TextButton.styleFrom(
+      foregroundColor: AppColors.primary200,
+      textStyle: AppTextStyles.extraBold(16),
+    ),
+  ),
+
+  // ─── Outlined Button ──────────────────────────────────────────────────
+  outlinedButtonTheme: OutlinedButtonThemeData(
+    style: OutlinedButton.styleFrom(
+      foregroundColor: AppColors.primary200,
+      side: const BorderSide(color: AppColors.primary200),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(rr(12)),
+      ),
+      textStyle: AppTextStyles.extraBold(16),
+    ),
+  ),
+
+  // ─── Input Decoration ─────────────────────────────────────────────────
+  inputDecorationTheme: InputDecorationTheme(
+    filled: true,
+    fillColor: WidgetStateColor.resolveWith((states) {
+      if (states.contains(WidgetState.focused)) return AppColors.primary50;
+      return AppColors.white;
+    }),
+    hintStyle: AppTextStyles.light(16).copyWith(color: AppColors.grey400),
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(rr(10)),
+      borderSide: const BorderSide(color: AppColors.grey200),
+    ),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(rr(10)),
+      borderSide: const BorderSide(color: AppColors.grey200),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(rr(10)),
+      borderSide: const BorderSide(color: AppColors.primary200),
+    ),
+    errorBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(rr(10)),
+      borderSide: const BorderSide(color: AppColors.red200),
+    ),
+    focusedErrorBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(rr(10)),
+      borderSide: const BorderSide(color: AppColors.red300),
+    ),
+  ),
+
+  // ─── Card ─────────────────────────────────────────────────────────────
+  cardTheme: CardThemeData(
+    color: AppColors.white,
+    elevation: 0,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(rr(12)),
+      side: const BorderSide(color: AppColors.grey100),
+    ),
+  ),
+
+  // ─── Divider ──────────────────────────────────────────────────────────
+  dividerTheme: const DividerThemeData(
+    color: AppColors.grey100,
+    thickness: 1,
+  ),
+
+  // ─── Icon ─────────────────────────────────────────────────────────────
+  iconTheme: const IconThemeData(color: AppColors.grey700),
 );
 ''';
 
 const _themeDataDark = '''
 import 'package:flutter/material.dart';
+
+import '../../utils/spacing.dart';
 import '../app_colors.dart';
+import '../app_text_styles.dart';
 import '../custom_colors.dart';
 
 ThemeData get darkTheme => ThemeData(
   brightness: Brightness.dark,
-  primaryColor: AppColors.primary,
-  scaffoldBackgroundColor: AppColors.black,
+  scaffoldBackgroundColor: AppColors.backgroundDark,
   extensions: const [CustomColors.dark],
+
+  // ─── Color Scheme ─────────────────────────────────────────────────────
+  colorScheme: ColorScheme.fromSeed(
+    seedColor: AppColors.primary200,
+    brightness: Brightness.dark,
+    primary: AppColors.primary200,
+    onPrimary: AppColors.white,
+    secondary: AppColors.secondary200,
+    onSecondary: AppColors.white,
+    surface: AppColors.backgroundDark,
+    onSurface: AppColors.white,
+    error: AppColors.red200,
+    onError: AppColors.white,
+  ),
+
+  // ─── Text ─────────────────────────────────────────────────────────────
+  textTheme: ThemeData.dark().textTheme.apply(
+    bodyColor: AppColors.white,
+    displayColor: AppColors.white,
+  ),
+
+  // ─── Elevated Button ──────────────────────────────────────────────────
+  elevatedButtonTheme: ElevatedButtonThemeData(
+    style: ElevatedButton.styleFrom(
+      backgroundColor: AppColors.primary200,
+      foregroundColor: AppColors.white,
+      disabledBackgroundColor: AppColors.grey700,
+      disabledForegroundColor: AppColors.grey500,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(rr(12)),
+      ),
+      textStyle: AppTextStyles.extraBold(16),
+    ),
+  ),
+
+  // ─── Text Button ──────────────────────────────────────────────────────
+  textButtonTheme: TextButtonThemeData(
+    style: TextButton.styleFrom(
+      foregroundColor: AppColors.primary200,
+      textStyle: AppTextStyles.extraBold(16),
+    ),
+  ),
+
+  // ─── Outlined Button ──────────────────────────────────────────────────
+  outlinedButtonTheme: OutlinedButtonThemeData(
+    style: OutlinedButton.styleFrom(
+      foregroundColor: AppColors.primary200,
+      side: const BorderSide(color: AppColors.primary200),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(rr(12)),
+      ),
+      textStyle: AppTextStyles.extraBold(16),
+    ),
+  ),
+
+  // ─── Input Decoration ─────────────────────────────────────────────────
+  inputDecorationTheme: InputDecorationTheme(
+    filled: true,
+    fillColor: WidgetStateColor.resolveWith((states) {
+      if (states.contains(WidgetState.focused)) return AppColors.grey700;
+      return AppColors.grey800;
+    }),
+    hintStyle: AppTextStyles.light(16).copyWith(color: AppColors.grey500),
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(rr(10)),
+      borderSide: const BorderSide(color: AppColors.grey600),
+    ),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(rr(10)),
+      borderSide: const BorderSide(color: AppColors.grey600),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(rr(10)),
+      borderSide: const BorderSide(color: AppColors.primary200),
+    ),
+    errorBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(rr(10)),
+      borderSide: const BorderSide(color: AppColors.red200),
+    ),
+    focusedErrorBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(rr(10)),
+      borderSide: const BorderSide(color: AppColors.red300),
+    ),
+  ),
+
+  // ─── Card ─────────────────────────────────────────────────────────────
+  cardTheme: CardThemeData(
+    color: AppColors.grey800,
+    elevation: 0,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(rr(12)),
+      side: const BorderSide(color: AppColors.grey700),
+    ),
+  ),
+
+  // ─── Divider ──────────────────────────────────────────────────────────
+  dividerTheme: const DividerThemeData(
+    color: AppColors.grey700,
+    thickness: 1,
+  ),
+
+  // ─── Icon ─────────────────────────────────────────────────────────────
+  iconTheme: const IconThemeData(color: AppColors.grey200),
 );
 ''';
 
@@ -645,6 +1027,7 @@ String _appDart(String routing) {
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'core/theme/app_fonts.dart';
 import 'core/theme/theme_data/theme_data_light.dart';
 import 'core/theme/theme_data/theme_data_dark.dart';
 import 'core/router/app_router.dart';
@@ -655,12 +1038,20 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // fontFamily is applied to the whole TextTheme, not baked into AppTextStyles,
+    // so it swaps automatically whenever context.locale changes — see
+    // reference/theming.md#fonts.
+    final fontFamily = AppFonts.forLocale(context.locale);
     return ScreenUtilInit(
       designSize: const Size(375, 812),
       builder: (context, child) => MaterialApp.router(
         debugShowCheckedModeBanner: false,
-        theme: lightTheme,
-        darkTheme: darkTheme,
+        theme: lightTheme.copyWith(
+          textTheme: lightTheme.textTheme.apply(fontFamily: fontFamily),
+        ),
+        darkTheme: darkTheme.copyWith(
+          textTheme: darkTheme.textTheme.apply(fontFamily: fontFamily),
+        ),
         themeMode: ThemeMode.system,
         localizationsDelegates: context.localizationDelegates,
         supportedLocales: context.supportedLocales,
@@ -677,6 +1068,7 @@ class App extends StatelessWidget {
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'core/theme/app_fonts.dart';
 import 'core/theme/theme_data/theme_data_light.dart';
 import 'core/theme/theme_data/theme_data_dark.dart';
 import 'core/router/routes.dart';
@@ -688,12 +1080,20 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // fontFamily is applied to the whole TextTheme, not baked into AppTextStyles,
+    // so it swaps automatically whenever context.locale changes — see
+    // reference/theming.md#fonts.
+    final fontFamily = AppFonts.forLocale(context.locale);
     return ScreenUtilInit(
       designSize: const Size(375, 812),
       builder: (context, child) => MaterialApp(
         debugShowCheckedModeBanner: false,
-        theme: lightTheme,
-        darkTheme: darkTheme,
+        theme: lightTheme.copyWith(
+          textTheme: lightTheme.textTheme.apply(fontFamily: fontFamily),
+        ),
+        darkTheme: darkTheme.copyWith(
+          textTheme: darkTheme.textTheme.apply(fontFamily: fontFamily),
+        ),
         themeMode: ThemeMode.system,
         localizationsDelegates: context.localizationDelegates,
         supportedLocales: context.supportedLocales,
