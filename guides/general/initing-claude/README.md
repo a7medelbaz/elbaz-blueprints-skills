@@ -4,7 +4,7 @@ This is the human-readable version of what the skill at [`skills/general/initing
 
 ## Contents
 - What it is, in one sentence
-- Two modes, chosen automatically
+- Three modes, chosen automatically
 - How it avoids the thing that makes AI-generated docs untrustworthy
 - The template it always produces
 - Writing instructions Claude actually follows
@@ -16,22 +16,23 @@ This is the human-readable version of what the skill at [`skills/general/initing
 
 A stricter, stack-agnostic replacement for Claude Code's built-in `/init`: instead of just reading your repo, it also fetches your framework's *current* official documentation before writing any rule, and it can't be customized or shared — this skill can, since it's distributed through this repo.
 
-## Two modes, chosen automatically
+## Three modes, chosen automatically
 
-The skill checks one thing first: does a `CLAUDE.md` already exist at the project root?
+The skill checks one thing first: does a `CLAUDE.md` already exist at the project root? If not, it's a full **Init**. If it does, the skill reads what was actually said — no clarifying question up front — to tell apart two different kinds of update:
 
-| Found? | Mode | What happens |
-|---|---|---|
-| No | **Init** | Full analysis — detect the stack, fetch its current docs, read the codebase, write the whole file |
-| Yes | **Update** | Asks what mistake just happened, adds exactly **one** new rule, touches nothing else |
+| Found? | What was said | Mode | What happens |
+|---|---|---|---|
+| No | — | **Init** | Full analysis — detect the stack, fetch its current docs, read the codebase, write the whole file |
+| Yes | A mistake or correction was named ("add a rule for X") | **Rule-addition** | Adds exactly **one** new rule, touches nothing else |
+| Yes | Anything else — "update this," "refresh it," a new feature was added, or no reason given | **Refresh** (the default) | Re-scans the codebase and updates only the factual sections — `Project Overview`, `Architecture`, `Tech Stack`, `Conventions` — to match what changed; leaves `Do`/`Don't` alone |
 
-The Update mode exists specifically to make this loop practical instead of manual:
+A bare "update CLAUDE.md" means Refresh, not an interrogation about what went wrong — that question only fires when a mistake is actually the reason for the run. Rule-addition exists specifically to make this loop practical instead of manual:
 
 ```
 write initial rules → work with the AI → notice a mistake → add a rule → repeat
 ```
 
-Every time a rule needs adding, you don't hand-edit the file or re-run a full regeneration that might clobber something you'd customized — you invoke the skill again, say what went wrong, and it appends one targeted line.
+Every time a rule needs adding, you don't hand-edit the file or re-run a full regeneration that might clobber something you'd customized — you invoke the skill again, say what went wrong, and it appends one targeted line. Refresh handles the other common case — the file just fell behind the codebase — without needing a mistake to point to at all.
 
 ## How it avoids the thing that makes AI-generated docs untrustworthy
 
@@ -75,7 +76,7 @@ A `CLAUDE.md` isn't enforced configuration — it's a message Claude reads and t
 
 ## Picking the right mechanism, not just CLAUDE.md
 
-Not every fix belongs in `CLAUDE.md`. Before adding a rule in Update mode, the skill checks what kind of fix is actually needed:
+Not every fix belongs in `CLAUDE.md`. Before adding a rule in Rule-addition mode, the skill checks what kind of fix is actually needed:
 
 | The fix needs to... | Use instead |
 |---|---|
@@ -88,7 +89,7 @@ This keeps `CLAUDE.md` from becoming a dumping ground for things a different mec
 
 ## What it deliberately does *not* do
 
-- **Doesn't regenerate an existing file.** Update mode only ever adds one line. A human may have hand-edited the file since it was generated — wholesale regeneration would silently destroy that.
+- **Doesn't regenerate an existing file.** Rule-addition only ever adds one line; Refresh only touches the factual sections it found evidence for. A human may have hand-edited the file since it was generated — wholesale regeneration would silently destroy that.
 - **Doesn't reference your personal installed skills.** It doesn't tell a future Claude session to "run clean-code-guard" or similar — those aren't guaranteed to exist for anyone else who installs this skill via skills.sh. The underlying principles are embedded directly in the rules it writes instead.
 - **Doesn't work well without network access.** `WebFetch`/`WebSearch` are Claude Code features, not available on the Claude API surface — this skill is built for Claude Code specifically, not every environment a skill could theoretically run in.
 - **Doesn't guess at a monorepo.** Multiple stacks detected → it asks which one, rather than producing something wrong for one of them.

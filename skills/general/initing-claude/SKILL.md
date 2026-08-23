@@ -10,9 +10,11 @@ description: Generates or hardens a project's CLAUDE.md by analyzing the actual 
 Check whether a `CLAUDE.md` already exists at the project root.
 
 - **Not found** → [Init workflow](#init-workflow): full analysis, write the file from scratch.
-- **Found** → [Update workflow](#update-workflow): add exactly one rule, touch nothing else.
+- **Found** → figure out which kind of update this is from what was actually said, without asking first:
+  - A mistake, correction, or "add a rule for X" was named → [Rule-addition workflow](#rule-addition-workflow).
+  - Anything else — "update this", "refresh it", "I added feature Y", or no reason given at all → [Refresh workflow](#refresh-workflow). **This is the default.** Don't stop to ask which kind of update is wanted; a bare "update CLAUDE.md" means refresh it from the current codebase, not report a mistake.
 
-Never regenerate an existing `CLAUDE.md` wholesale — a human may have hand-edited it since it was generated, and wholesale regeneration silently destroys that.
+Never regenerate an existing `CLAUDE.md` wholesale — a human may have hand-edited it since it was generated, and wholesale regeneration silently destroys that. Both update flows below touch only what changed.
 
 ## The rule that governs everything below
 
@@ -114,12 +116,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Before presenting the file, count its lines. Over ~200? Trim per the size guidance above rather than shipping a file Claude will only partially read.
 
-## Update workflow
+## Rule-addition workflow
 
-This implements the iterative-improvement cycle: write rules → work with the AI → notice a mistake → add a rule → repeat.
+Use this when a mistake, correction, or specific rule request was actually named. This implements the iterative-improvement cycle: write rules → work with the AI → notice a mistake → add a rule → repeat.
 
 1. Read the existing `CLAUDE.md` in full.
-2. Ask the user: **what mistake or pattern just happened that this should prevent next time?**
+2. If the mistake itself wasn't stated yet — only the fact that something should be added — ask: **what mistake or pattern just happened that this should prevent next time?** If it was already stated in the request that triggered this workflow, don't ask again.
 3. Decide whether CLAUDE.md is even the right mechanism for this fix — it's advisory, not enforced:
 
    | The fix needs to... | Use instead |
@@ -134,12 +136,24 @@ This implements the iterative-improvement cycle: write rules → work with the A
 6. Append **exactly one** new line to the right section, written per [Write instructions Claude will actually follow](#write-instructions-claude-will-actually-follow) — specific, checkable, with a brief reason if it's not self-evident. Do not touch any other line, section, or ordering. Do not "clean up" or rewrite existing content while you're in there — that's a different task the user hasn't asked for.
 7. Show the user the diff (just the new line), not the whole file.
 
+## Refresh workflow
+
+Use this — the default — when the codebase changed (a new feature, a new dependency, a moved folder, a changed pattern) and the file should catch up. No clarifying question first: re-scan and update.
+
+1. Read the existing `CLAUDE.md` in full.
+2. Re-analyze the actual codebase the same way as [Init workflow step 3](#3-analyze-the-actual-codebase) — folder structure, package manifest, a representative sample of current code. Look specifically for what's changed since this file was last written.
+3. Update only `Project Overview`, `Architecture`, `Tech Stack`, and `Conventions` — the factual sections — to match what you actually found. Add what's new, correct what's now wrong, remove what no longer applies. The governing rule still applies: every change traces to something read this run.
+4. Leave `Do`/`Don't` alone unless the codebase change makes an *existing* rule factually wrong (e.g. a documented convention was replaced). Don't invent new `Do`/`Don't` rules here — a new rule with no mistake behind it belongs in the Rule-addition workflow, not this one.
+5. Show the user the diff, not the whole file. If nothing in the codebase actually changed since the file was last written, say so instead of rewriting sections for the sake of it.
+
 ## Anti-patterns — don't do these
 
 - Writing a rule from memory of "how this framework usually works" without an actual `WebFetch` in this run backing it up
-- Regenerating a whole existing `CLAUDE.md` when only the Update workflow (one new rule) was called for
+- Regenerating a whole existing `CLAUDE.md` when only a targeted update (one new rule, or a refresh of the factual sections) was called for
+- Asking "what mistake happened?" when the user just asked for an update with no mistake implied — that's the Refresh workflow, not Rule-addition
 - Copying this skill's own illustrative example rules (e.g. from a Flutter project) into an unrelated project's file — every rule must come from *that* project's actual stack and code
 - Adding a section beyond the fixed six, or renaming one
 - Writing a rule that isn't checkable ("write good code," "be careful with state") — if you can't imagine how someone would verify a violation, it doesn't belong
 - Appending a rule to CLAUDE.md for something that should be a hook (must-happen-every-time, no exceptions) or a skill (multi-step, only occasionally relevant) instead
+- Inventing new Do/Don't rules during a Refresh — that's Rule-addition's job, not a side effect of catching the file up
 - Letting the file grow past ~200 lines instead of splitting into `.claude/rules/` or a skill

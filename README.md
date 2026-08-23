@@ -100,7 +100,7 @@ Why it matters: a `CLAUDE.md` is only as good as it is specific and current — 
 - Fetches that framework's **current** official docs — a built-in map of known doc roots for common stacks, falling back to a live search for anything not in the map
 - Writes `CLAUDE.md` in a fixed six-section template (Project Overview, Architecture, Tech Stack, Conventions, Do, Don't) — every `Do`/`Don't` rule traceable to something it actually found in the codebase or actually fetched, never asserted from memory
 - Writes every rule the way Claude Code's own docs say actually gets followed: under ~200 lines total, checkable rather than vague, a one-clause reason on non-obvious rules, emphasis spent sparingly
-- On a project that **already has** a `CLAUDE.md`, switches to update mode: asks what mistake just happened, picks the right mechanism (CLAUDE.md rule vs. a hook vs. a path-scoped rule vs. a skill), adds exactly one new line if CLAUDE.md is the right fit, and touches nothing else — this is the "notice a mistake → add a rule" loop, built into the skill instead of done by hand
+- On a project that **already has** a `CLAUDE.md`, tells apart two kinds of update from what was actually said, no clarifying question first: a named mistake triggers **Rule-addition** (picks the right mechanism — CLAUDE.md rule vs. a hook vs. a path-scoped rule vs. a skill — then adds exactly one line if CLAUDE.md fits); anything else (a plain "update it," a new feature) triggers **Refresh** (re-scans the codebase and updates only the factual sections — Project Overview/Architecture/Tech Stack/Conventions — leaving Do/Don't untouched)
 
 Full plain-language explanation of everything this skill does: [`guides/general/initing-claude/README.md`](guides/general/initing-claude/README.md)
 
