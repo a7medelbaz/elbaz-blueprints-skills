@@ -127,8 +127,10 @@ void main(List<String> args) async {
   await _writeFile('$libDir/core/utils/spacing.dart', _spacing);
   await _writeFile('$libDir/core/utils/extensions/context_ext.dart', _contextExt(routing));
   await _writeFile('$libDir/core/theme/app_colors.dart', _appColors);
+  await _writeFile('$libDir/core/theme/app_font_weight.dart', _appFontWeight);
   await _writeFile('$libDir/core/theme/app_text_styles.dart', _appTextStyles);
   await _writeFile('$libDir/core/theme/app_fonts.dart', _appFonts(fonts));
+  await _writeFile('$libDir/core/theme/app_font_family.dart', _appFontFamily(fonts));
   await _writeFile('$libDir/core/theme/custom_colors.dart', _customColors);
   await _writeFile('$libDir/core/theme/theme_data/theme_data_light.dart', _themeDataLight);
   await _writeFile('$libDir/core/theme/theme_data/theme_data_dark.dart', _themeDataDark);
@@ -184,7 +186,7 @@ void main(List<String> args) async {
   if (routing == 'go_router') packagesToAdd.add('go_router');
 
   if (dryRun) {
-    _printSummary(routing, await _missingPackages(projectName, packagesToAdd));
+    _printSummary(routing, await _missingPackages(projectName, packagesToAdd), fonts);
     return;
   }
 
@@ -199,7 +201,7 @@ void main(List<String> args) async {
     }
   }
 
-  _printSummary(routing, packagesToAdd);
+  _printSummary(routing, packagesToAdd, fonts);
 }
 
 /// Dry-run only: which required packages are not already in pubspec.yaml.
@@ -442,7 +444,7 @@ Future<void> _patchAndroidManifestLabel(String projectName) async {
   await manifest.writeAsString(content.replaceFirst(labelPattern, label));
 }
 
-void _printSummary(String routing, List<String> packages) {
+void _printSummary(String routing, List<String> packages, Map<String, String> fonts) {
   print(dryRun ? '\n===== Dry run — nothing was written =====' : '\n===== Scaffold summary =====');
   print('Routing mode: $routing');
 
@@ -473,9 +475,10 @@ void _printSummary(String routing, List<String> packages) {
   print('  2. Fill in TODOs in core/theme/* with your real palette/type scale');
   print('  3. Register your first repo/cubit in core/di/dependency_injection.dart');
   print('  4. Drop real files into assets/images/, assets/svgs/ — already registered in pubspec.yaml');
+  final exampleFamily = fonts.values.first;
   print('  5. Download the registered font families from fonts.google.com and place them in '
       'assets/fonts/ — filenames must match what pubspec.yaml now lists under fonts: '
-      '(e.g. Tajawal-Regular.ttf, Tajawal-Bold.ttf)');
+      '(e.g. $exampleFamily-Regular.ttf, $exampleFamily-Bold.ttf)');
   print('  6. Add more locales by creating assets/translations/<locale>.json, adding it to '
       'supportedLocales in main_dev.dart / main_prod.dart, and mapping it in AppFonts.byLanguage '
       'if it needs a font other than AppFonts.fallback');
@@ -684,10 +687,40 @@ class AppColors {
   static const Color red800 = Color(0xFFC62828);
   static const Color red900 = Color(0xFFB71C1C);
 
-  // Sized to exactly what CustomColors.success needs (light/dark) — not a
-  // full scale, since nothing else in the scaffold references a green shade.
+  static const Color green50 = Color(0xFFE8F5E9);
+  static const Color green100 = Color(0xFFC8E6C9);
   static const Color green200 = Color(0xFFA5D6A7);
+  static const Color green300 = Color(0xFF81C784);
+  static const Color green400 = Color(0xFF66BB6A);
+  static const Color green500 = Color(0xFF4CAF50);
+  static const Color green600 = Color(0xFF43A047);
   static const Color green700 = Color(0xFF388E3C);
+  static const Color green800 = Color(0xFF2E7D32);
+  static const Color green900 = Color(0xFF1B5E20);
+
+  static const Color amber50 = Color(0xFFFFF8E1);
+  static const Color amber100 = Color(0xFFFFECB3);
+  static const Color amber200 = Color(0xFFFFE082);
+  static const Color amber300 = Color(0xFFFFD54F);
+  static const Color amber400 = Color(0xFFFFCA28);
+  static const Color amber500 = Color(0xFFFFC107);
+  static const Color amber600 = Color(0xFFFFB300);
+  static const Color amber700 = Color(0xFFFFA000);
+  static const Color amber800 = Color(0xFFFF8F00);
+  static const Color amber900 = Color(0xFFFF6F00);
+
+  // A distinct family from `primary` (also blue by default) so "info" status
+  // colors don't silently equal the brand color — swap both independently.
+  static const Color blue50 = Color(0xFFE1F5FE);
+  static const Color blue100 = Color(0xFFB3E5FC);
+  static const Color blue200 = Color(0xFF81D4FA);
+  static const Color blue300 = Color(0xFF4FC3F7);
+  static const Color blue400 = Color(0xFF29B6F6);
+  static const Color blue500 = Color(0xFF03A9F4);
+  static const Color blue600 = Color(0xFF039BE5);
+  static const Color blue700 = Color(0xFF0288D1);
+  static const Color blue800 = Color(0xFF0277BD);
+  static const Color blue900 = Color(0xFF01579B);
 
   static const Color backgroundLight = Color(0xFFFFFFFF);
   static const Color backgroundDark = Color(0xFF121212);
@@ -696,27 +729,132 @@ class AppColors {
 }
 ''';
 
+const _appFontWeight = '''
+import 'package:flutter/material.dart';
+
+class AppFontWeight {
+  const AppFontWeight._();
+  static const FontWeight thin = FontWeight.w100;
+  static const FontWeight extraLight = FontWeight.w200;
+  static const FontWeight light = FontWeight.w300;
+  static const FontWeight regular = FontWeight.w400;
+  static const FontWeight medium = FontWeight.w500;
+  static const FontWeight semiBold = FontWeight.w600;
+  static const FontWeight bold = FontWeight.w700;
+  static const FontWeight extraBold = FontWeight.w800;
+  static const FontWeight black = FontWeight.w900;
+}
+''';
+
+// Fixed size x weight matrix, not parameterized functions — deliberately not
+// screen-adaptive (no flutter_screenutil .sp; these are `const`, and .sp is a
+// runtime call that can't be const). Extend by adding another named constant,
+// not a new parameter — see reference/theming.md.
 const _appTextStyles = '''
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-// Weight is the named part; size is always a parameter — call
-// AppTextStyles.extraBold(16), not a fixed per-size getter. That's what makes
-// this reusable across projects with different type scales: a project with
-// 15/18/22px sizes uses the exact same five functions as one with 14/16/28px.
-// If a project settles on named presets (e.g. `button`, `hint`), add them on
-// top as project-specific getters built from these — see reference/theming.md.
+import 'app_font_weight.dart';
+
 class AppTextStyles {
-  AppTextStyles._();
+  const AppTextStyles._();
 
-  static TextStyle _base(double size, FontWeight weight) =>
-      TextStyle(fontSize: size.sp, fontWeight: weight);
+  // Font Size 24
+  static const TextStyle font24ExtraBold = TextStyle(
+    fontSize: 24,
+    fontWeight: AppFontWeight.extraBold,
+  );
+  static const TextStyle font24SemiBold = TextStyle(
+    fontSize: 24,
+    fontWeight: AppFontWeight.semiBold,
+  );
+  static const TextStyle font24Light = TextStyle(
+    fontSize: 24,
+    fontWeight: AppFontWeight.light,
+  );
 
-  static TextStyle extraBold(double size) => _base(size, FontWeight.w800);
-  static TextStyle bold(double size) => _base(size, FontWeight.w700);
-  static TextStyle medium(double size) => _base(size, FontWeight.w500);
-  static TextStyle regular(double size) => _base(size, FontWeight.w400);
-  static TextStyle light(double size) => _base(size, FontWeight.w300);
+  // Font Size 22
+  static const TextStyle font22ExtraBold = TextStyle(
+    fontSize: 22,
+    fontWeight: AppFontWeight.extraBold,
+  );
+  static const TextStyle font22SemiBold = TextStyle(
+    fontSize: 22,
+    fontWeight: AppFontWeight.semiBold,
+  );
+  static const TextStyle font22Light = TextStyle(
+    fontSize: 22,
+    fontWeight: AppFontWeight.light,
+  );
+
+  // Font Size 20
+  static const TextStyle font20ExtraBold = TextStyle(
+    fontSize: 20,
+    fontWeight: AppFontWeight.extraBold,
+  );
+  static const TextStyle font20SemiBold = TextStyle(
+    fontSize: 20,
+    fontWeight: AppFontWeight.semiBold,
+  );
+  static const TextStyle font20Light = TextStyle(
+    fontSize: 20,
+    fontWeight: AppFontWeight.light,
+  );
+
+  // Font Size 18
+  static const TextStyle font18ExtraBold = TextStyle(
+    fontSize: 18,
+    fontWeight: AppFontWeight.extraBold,
+  );
+  static const TextStyle font18SemiBold = TextStyle(
+    fontSize: 18,
+    fontWeight: AppFontWeight.semiBold,
+  );
+  static const TextStyle font18Light = TextStyle(
+    fontSize: 18,
+    fontWeight: AppFontWeight.light,
+  );
+
+  // Font Size 16
+  static const TextStyle font16ExtraBold = TextStyle(
+    fontSize: 16,
+    fontWeight: AppFontWeight.extraBold,
+  );
+  static const TextStyle font16SemiBold = TextStyle(
+    fontSize: 16,
+    fontWeight: AppFontWeight.semiBold,
+  );
+  static const TextStyle font16Light = TextStyle(
+    fontSize: 16,
+    fontWeight: AppFontWeight.light,
+  );
+
+  // Font Size 14
+  static const TextStyle font14ExtraBold = TextStyle(
+    fontSize: 14,
+    fontWeight: AppFontWeight.extraBold,
+  );
+  static const TextStyle font14SemiBold = TextStyle(
+    fontSize: 14,
+    fontWeight: AppFontWeight.semiBold,
+  );
+  static const TextStyle font14Light = TextStyle(
+    fontSize: 14,
+    fontWeight: AppFontWeight.light,
+  );
+
+  // Font Size 12
+  static const TextStyle font12ExtraBold = TextStyle(
+    fontSize: 12,
+    fontWeight: AppFontWeight.extraBold,
+  );
+  static const TextStyle font12SemiBold = TextStyle(
+    fontSize: 12,
+    fontWeight: AppFontWeight.semiBold,
+  );
+  static const TextStyle font12Light = TextStyle(
+    fontSize: 12,
+    fontWeight: AppFontWeight.light,
+  );
 }
 ''';
 
@@ -747,36 +885,184 @@ $entries
 ''';
 }
 
+// One constant per DISTINCT family actually chosen via --fonts, named by
+// lowerCamelCasing the family — never hardcoded, or a project scaffolded with
+// a different --fonts mapping would ship dead constants for fonts it never
+// picked, alongside a correct AppFonts.byLanguage that contradicts them.
+String _appFontFamily(Map<String, String> fonts) {
+  final families = fonts.values.toSet().toList()..sort();
+  final constants = families
+      .map((f) => "  static const String ${_toCamelCase(f)} = '$f';")
+      .join('\n');
+  return '''
+class AppFontFamily {
+  const AppFontFamily._();
+$constants
+}
+''';
+}
+
+// 'Noto Sans Arabic' -> 'notoSansArabic'. Family names are already validated
+// by _parseFonts to be letters/digits/spaces starting with a letter.
+String _toCamelCase(String family) {
+  final words = family.split(' ').where((w) => w.isNotEmpty).toList();
+  final first = words.first[0].toLowerCase() + words.first.substring(1);
+  final rest = words.skip(1).map((w) => w[0].toUpperCase() + w.substring(1));
+  return ([first, ...rest]).join();
+}
+
+// For colors with no Material component role (no cardTheme/dividerTheme/
+// colorScheme.surface/iconTheme field to hold them). A color a standard
+// component theme or ColorScheme already covers — surface, border, divider,
+// the primary icon color — belongs in ThemeData directly (theme_data_light/
+// dark.dart), not here, or there'd be two conflicting sources of truth for
+// the same visual property. Stays a ThemeExtension (not a plain class) so
+// light/dark transitions animate via lerp, same as every other Material
+// theme property.
 const _customColors = '''
 import 'package:flutter/material.dart';
+
 import 'app_colors.dart';
 
-// For colors with no Material component role (no cardTheme/dividerTheme/etc.
-// field to hold them) — e.g. "success". A color a standard component theme
-// already covers (card background, divider, icon) belongs in ThemeData
-// directly (theme_data_light.dart / theme_data_dark.dart), not here.
-// TODO: add more semantic tokens as the project needs them
 class CustomColors extends ThemeExtension<CustomColors> {
+  final Color textPrimary;
+  final Color textSecondary;
+  final Color textHint;
+  final Color textDisabled;
+  final Color textInverse;
+  final Color background;
+  final Color backgroundSecondary;
+  final Color backgroundInverse;
+  final Color iconSecondary;
   final Color success;
-  final Color cardBackground;
+  final Color successBackground;
+  final Color warning;
+  final Color warningBackground;
+  final Color error;
+  final Color errorBackground;
+  final Color info;
+  final Color infoBackground;
 
-  const CustomColors({required this.success, required this.cardBackground});
+  const CustomColors({
+    required this.textPrimary,
+    required this.textSecondary,
+    required this.textHint,
+    required this.textDisabled,
+    required this.textInverse,
+    required this.background,
+    required this.backgroundSecondary,
+    required this.backgroundInverse,
+    required this.iconSecondary,
+    required this.success,
+    required this.successBackground,
+    required this.warning,
+    required this.warningBackground,
+    required this.error,
+    required this.errorBackground,
+    required this.info,
+    required this.infoBackground,
+  });
 
-  static const light = CustomColors(success: AppColors.green700, cardBackground: AppColors.white);
-  static const dark = CustomColors(success: AppColors.green200, cardBackground: AppColors.backgroundDark);
+  static const light = CustomColors(
+    textPrimary: AppColors.black,
+    textSecondary: AppColors.grey600,
+    textHint: AppColors.grey400,
+    textDisabled: AppColors.grey300,
+    textInverse: AppColors.white,
+    background: AppColors.backgroundLight,
+    backgroundSecondary: AppColors.grey50,
+    backgroundInverse: AppColors.black,
+    iconSecondary: AppColors.grey400,
+    success: AppColors.green700,
+    successBackground: AppColors.green50,
+    warning: AppColors.amber700,
+    warningBackground: AppColors.amber50,
+    error: AppColors.red700,
+    errorBackground: AppColors.red50,
+    info: AppColors.blue700,
+    infoBackground: AppColors.blue50,
+  );
+
+  static const dark = CustomColors(
+    textPrimary: AppColors.white,
+    textSecondary: AppColors.grey300,
+    textHint: AppColors.grey500,
+    textDisabled: AppColors.grey600,
+    textInverse: AppColors.black,
+    background: AppColors.backgroundDark,
+    backgroundSecondary: AppColors.grey800,
+    backgroundInverse: AppColors.white,
+    iconSecondary: AppColors.grey500,
+    success: AppColors.green200,
+    successBackground: AppColors.green800,
+    warning: AppColors.amber200,
+    warningBackground: AppColors.amber800,
+    error: AppColors.red200,
+    errorBackground: AppColors.red800,
+    info: AppColors.blue200,
+    infoBackground: AppColors.blue800,
+  );
 
   @override
-  CustomColors copyWith({Color? success, Color? cardBackground}) => CustomColors(
+  CustomColors copyWith({
+    Color? textPrimary,
+    Color? textSecondary,
+    Color? textHint,
+    Color? textDisabled,
+    Color? textInverse,
+    Color? background,
+    Color? backgroundSecondary,
+    Color? backgroundInverse,
+    Color? iconSecondary,
+    Color? success,
+    Color? successBackground,
+    Color? warning,
+    Color? warningBackground,
+    Color? error,
+    Color? errorBackground,
+    Color? info,
+    Color? infoBackground,
+  }) => CustomColors(
+    textPrimary: textPrimary ?? this.textPrimary,
+    textSecondary: textSecondary ?? this.textSecondary,
+    textHint: textHint ?? this.textHint,
+    textDisabled: textDisabled ?? this.textDisabled,
+    textInverse: textInverse ?? this.textInverse,
+    background: background ?? this.background,
+    backgroundSecondary: backgroundSecondary ?? this.backgroundSecondary,
+    backgroundInverse: backgroundInverse ?? this.backgroundInverse,
+    iconSecondary: iconSecondary ?? this.iconSecondary,
     success: success ?? this.success,
-    cardBackground: cardBackground ?? this.cardBackground,
+    successBackground: successBackground ?? this.successBackground,
+    warning: warning ?? this.warning,
+    warningBackground: warningBackground ?? this.warningBackground,
+    error: error ?? this.error,
+    errorBackground: errorBackground ?? this.errorBackground,
+    info: info ?? this.info,
+    infoBackground: infoBackground ?? this.infoBackground,
   );
 
   @override
   CustomColors lerp(ThemeExtension<CustomColors>? other, double t) {
     if (other is! CustomColors) return this;
     return CustomColors(
+      textPrimary: Color.lerp(textPrimary, other.textPrimary, t)!,
+      textSecondary: Color.lerp(textSecondary, other.textSecondary, t)!,
+      textHint: Color.lerp(textHint, other.textHint, t)!,
+      textDisabled: Color.lerp(textDisabled, other.textDisabled, t)!,
+      textInverse: Color.lerp(textInverse, other.textInverse, t)!,
+      background: Color.lerp(background, other.background, t)!,
+      backgroundSecondary: Color.lerp(backgroundSecondary, other.backgroundSecondary, t)!,
+      backgroundInverse: Color.lerp(backgroundInverse, other.backgroundInverse, t)!,
+      iconSecondary: Color.lerp(iconSecondary, other.iconSecondary, t)!,
       success: Color.lerp(success, other.success, t)!,
-      cardBackground: Color.lerp(cardBackground, other.cardBackground, t)!,
+      successBackground: Color.lerp(successBackground, other.successBackground, t)!,
+      warning: Color.lerp(warning, other.warning, t)!,
+      warningBackground: Color.lerp(warningBackground, other.warningBackground, t)!,
+      error: Color.lerp(error, other.error, t)!,
+      errorBackground: Color.lerp(errorBackground, other.errorBackground, t)!,
+      info: Color.lerp(info, other.info, t)!,
+      infoBackground: Color.lerp(infoBackground, other.infoBackground, t)!,
     );
   }
 }
@@ -825,7 +1111,7 @@ ThemeData get lightTheme => ThemeData(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(rr(12)),
       ),
-      textStyle: AppTextStyles.extraBold(16),
+      textStyle: AppTextStyles.font16ExtraBold,
     ),
   ),
 
@@ -833,7 +1119,7 @@ ThemeData get lightTheme => ThemeData(
   textButtonTheme: TextButtonThemeData(
     style: TextButton.styleFrom(
       foregroundColor: AppColors.primary200,
-      textStyle: AppTextStyles.extraBold(16),
+      textStyle: AppTextStyles.font16ExtraBold,
     ),
   ),
 
@@ -845,7 +1131,7 @@ ThemeData get lightTheme => ThemeData(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(rr(12)),
       ),
-      textStyle: AppTextStyles.extraBold(16),
+      textStyle: AppTextStyles.font16ExtraBold,
     ),
   ),
 
@@ -856,7 +1142,7 @@ ThemeData get lightTheme => ThemeData(
       if (states.contains(WidgetState.focused)) return AppColors.primary50;
       return AppColors.white;
     }),
-    hintStyle: AppTextStyles.light(16).copyWith(color: AppColors.grey400),
+    hintStyle: AppTextStyles.font16Light.copyWith(color: AppColors.grey400),
     border: OutlineInputBorder(
       borderRadius: BorderRadius.circular(rr(10)),
       borderSide: const BorderSide(color: AppColors.grey200),
@@ -943,7 +1229,7 @@ ThemeData get darkTheme => ThemeData(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(rr(12)),
       ),
-      textStyle: AppTextStyles.extraBold(16),
+      textStyle: AppTextStyles.font16ExtraBold,
     ),
   ),
 
@@ -951,7 +1237,7 @@ ThemeData get darkTheme => ThemeData(
   textButtonTheme: TextButtonThemeData(
     style: TextButton.styleFrom(
       foregroundColor: AppColors.primary200,
-      textStyle: AppTextStyles.extraBold(16),
+      textStyle: AppTextStyles.font16ExtraBold,
     ),
   ),
 
@@ -963,7 +1249,7 @@ ThemeData get darkTheme => ThemeData(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(rr(12)),
       ),
-      textStyle: AppTextStyles.extraBold(16),
+      textStyle: AppTextStyles.font16ExtraBold,
     ),
   ),
 
@@ -974,7 +1260,7 @@ ThemeData get darkTheme => ThemeData(
       if (states.contains(WidgetState.focused)) return AppColors.grey700;
       return AppColors.grey800;
     }),
-    hintStyle: AppTextStyles.light(16).copyWith(color: AppColors.grey500),
+    hintStyle: AppTextStyles.font16Light.copyWith(color: AppColors.grey500),
     border: OutlineInputBorder(
       borderRadius: BorderRadius.circular(rr(10)),
       borderSide: const BorderSide(color: AppColors.grey600),
