@@ -11,6 +11,11 @@
       "name": "initing-claude",
       "path": "skills/general/initing-claude",
       "description": "Generates or hardens a project's CLAUDE.md by analyzing the actual codebase and fetching current official documentation for whatever tech stack it detects — architecture, conventions, and strict, specific Do/Don't rules grounded in real fetched docs, never memorized knowledge."
+    },
+    {
+      "name": "initing-codex",
+      "path": "skills/general/initing-codex",
+      "description": "Generates or hardens a project's AGENTS.md by analyzing the actual codebase and fetching current official documentation for its detected stack, then writing concise, evidence-grounded instructions for Codex."
     }
   ]
 }
