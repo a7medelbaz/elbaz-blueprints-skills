@@ -13,6 +13,7 @@ npx skills add ahmed-elbaz/elbaz-blueprints
 npx skills add ahmed-elbaz/elbaz-blueprints --skill bootstrapping-flutter-mvvm
 npx skills add ahmed-elbaz/elbaz-blueprints --skill initing-claude
 npx skills add ahmed-elbaz/elbaz-blueprints --skill initing-codex
+npx skills add ahmed-elbaz/elbaz-blueprints --skill tech-mentor
 
 # Install for a specific agent
 npx skills add ahmed-elbaz/elbaz-blueprints --skill bootstrapping-flutter-mvvm --agent claude-code
@@ -44,7 +45,7 @@ elbaz-blueprints/
 │   ├── general/
 │   │   ├── initing-claude/
 │   │   │   └── README.md    ← everything the skill does, in plain language
-│   │   └── initing-codex/
+│   │   ├── initing-codex/
 │   │       └── README.md    ← everything the skill does, in plain language
 │   └── odoo/
 │       └── (coming soon)
@@ -58,9 +59,13 @@ elbaz-blueprints/
     │   ├── initing-claude/
     │   │   ├── SKILL.md
     │   │   └── reference/
-    │   └── initing-codex/
+    │   ├── initing-codex/
     │       ├── SKILL.md
     │       └── reference/
+    │   └── tech-mentor/
+    │       ├── SKILL.md
+    │       ├── references/
+    │       └── tests/
     └── odoo/
         └── (coming soon)
 ```
@@ -72,6 +77,7 @@ elbaz-blueprints/
 | [bootstrapping-flutter-mvvm](skills/flutter/bootstrapping-flutter-mvvm/SKILL.md) | Flutter | Scaffolds Flutter projects with MVVM + BLoC (Cubit) architecture — core infrastructure, feature skeletons, Android flavors, DI, routing, assets, localization, error handling, and theming.                                                     |
 | [initing-claude](skills/general/initing-claude/SKILL.md)                         | General | Generates or hardens a project's`CLAUDE.md` for any language/framework — detects the stack, fetches its current official docs, and writes strict, specific Do/Don't rules grounded in what was actually fetched or observed, never memorized. |
 | [initing-codex](skills/general/initing-codex/SKILL.md)                           | General | Generates or hardens a project's`AGENTS.md` for any language/framework — detects the stack, fetches current official docs, and writes concise instructions grounded in observed evidence.                                                     |
+| [tech-mentor](skills/general/tech-mentor/SKILL.md)                               | General | Creates or audits personalized, evidence-based technology learning and career paths focused on real-world capability, portfolio proof, and role readiness.                                                                                         |
 
 ## Flutter
 
@@ -133,6 +139,12 @@ Install the published copy for Codex with the command above. While developing th
 The package uses the portable `SKILL.md` format. OpenAI-hosted agent environments can consume skills through the Skills API, which accepts a skill directory or zip upload; that is separate from local Codex discovery. Other cloud hosts must support Agent Skills and define their own installation and invocation flow.
 
 Full usage: [skills/general/initing-codex/SKILL.md](skills/general/initing-codex/SKILL.md)
+
+### tech-mentor
+
+Creates or audits personalized technology learning and career paths. It challenges unrealistic scope, maps prerequisites and evidence, researches compatible current versions, evaluates courses, and produces a proportionate Markdown workspace.
+
+Full usage: [skills/general/tech-mentor/SKILL.md](skills/general/tech-mentor/SKILL.md)
 
 ## Adding a new skill
 

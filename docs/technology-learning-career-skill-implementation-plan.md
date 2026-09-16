@@ -80,7 +80,7 @@ technology stack required by a career target.
 Create an Agent Skills-standard folder named:
 
 ```text
-technology-learning-career-path/
+tech-mentor/
 ├── SKILL.md
 ├── references/
 │   ├── discovery-and-critique.md
@@ -148,7 +148,7 @@ routing; detailed procedures belong in the relevant reference files.
 
 ### Frontmatter
 
-- `name`: `technology-learning-career-path`
+- `name`: `tech-mentor`
 - A discriminating description that triggers for creating or auditing
   personalized technology learning/career paths.
 - Use only frontmatter fields supported by the Agent Skills standard. Do not
@@ -425,7 +425,7 @@ not fabricate certainty.
 ### Phase 2 — Luna Medium: create the skill after approval
 
 1. Create the portable Agent Skills-standard folder
-   `technology-learning-career-path` with `SKILL.md`, `references/`, and
+   `tech-mentor` with `SKILL.md`, `references/`, and
    `tests/`. Do not create platform metadata in the core package.
 2. Write concise `SKILL.md` routing, the eight focused reference files, and
    `tests/scenarios.md` using the behavioral test cases below.
