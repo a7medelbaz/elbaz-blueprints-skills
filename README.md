@@ -67,11 +67,11 @@ elbaz-blueprints/
 
 ## Skills
 
-| Skill | Domain | Description |
-|---|---|---|
-| [bootstrapping-flutter-mvvm](skills/flutter/bootstrapping-flutter-mvvm/SKILL.md) | Flutter | Scaffolds Flutter projects with MVVM + BLoC (Cubit) architecture — core infrastructure, feature skeletons, Android flavors, DI, routing, assets, localization, error handling, and theming. |
-| [initing-claude](skills/general/initing-claude/SKILL.md) | General | Generates or hardens a project's `CLAUDE.md` for any language/framework — detects the stack, fetches its current official docs, and writes strict, specific Do/Don't rules grounded in what was actually fetched or observed, never memorized. |
-| [initing-codex](skills/general/initing-codex/SKILL.md) | General | Generates or hardens a project's `AGENTS.md` for any language/framework — detects the stack, fetches current official docs, and writes concise instructions grounded in observed evidence. |
+| Skill                                                                           | Domain  | Description                                                                                                                                                                                                                                      |
+| ------------------------------------------------------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [bootstrapping-flutter-mvvm](skills/flutter/bootstrapping-flutter-mvvm/SKILL.md) | Flutter | Scaffolds Flutter projects with MVVM + BLoC (Cubit) architecture — core infrastructure, feature skeletons, Android flavors, DI, routing, assets, localization, error handling, and theming.                                                     |
+| [initing-claude](skills/general/initing-claude/SKILL.md)                         | General | Generates or hardens a project's`CLAUDE.md` for any language/framework — detects the stack, fetches its current official docs, and writes strict, specific Do/Don't rules grounded in what was actually fetched or observed, never memorized. |
+| [initing-codex](skills/general/initing-codex/SKILL.md)                           | General | Generates or hardens a project's`AGENTS.md` for any language/framework — detects the stack, fetches current official docs, and writes concise instructions grounded in observed evidence.                                                     |
 
 ## Flutter
 
@@ -80,6 +80,7 @@ elbaz-blueprints/
 Why it matters: turns a blank Flutter project into a production-ready MVVM + BLoC codebase in one command — the boring, error-prone setup that's identical on every project, done once, correctly, every time.
 
 **Builds:**
+
 - MVVM + BLoC (Cubit) architecture — `core/` (config, DI, router, error, theme, utils) + `features/`
 - DI via `get_it`
 - Routing — named routes or `go_router`
@@ -93,6 +94,7 @@ Why it matters: turns a blank Flutter project into a production-ready MVVM + BLo
 Full plain-language explanation of everything this skill does: [`guides/flutter/bootstrapping-flutter-mvvm/README.md`](guides/flutter/bootstrapping-flutter-mvvm/README.md)
 
 **Use it effectively:**
+
 - Always run `--dry-run` first — it reports what exists and what's missing, writes nothing
 - Review that report, then apply for real
 - Safe on an existing project — it never overwrites a file that's already there; it only fills in what's missing
@@ -107,6 +109,7 @@ Full usage: [skills/flutter/bootstrapping-flutter-mvvm/SKILL.md](skills/flutter/
 Why it matters: a `CLAUDE.md` is only as good as it is specific and current — generic advice ("write clean code," "follow best practices") is worthless, and rules copied from a framework's docs six months ago are actively wrong once that framework moves on. This skill fixes both problems at generation time, for any stack, not just the ones it ships examples for.
 
 **Does:**
+
 - Detects the project's stack from its manifest file (`pubspec.yaml`, `package.json`, `requirements.txt`, `go.mod`, `Gemfile`, `composer.json`, `pom.xml`/`build.gradle`, `*.csproj`, `Cargo.toml`, `mix.exs`, ...) — and for JS/Python in particular, inspects dependencies to identify the actual framework (React vs. Next.js vs. Vue, Django vs. Flask vs. FastAPI, etc.); also checks for an existing `AGENTS.md`/Cursor/Copilot rules and imports rather than duplicates them
 - Fetches that framework's **current** official docs — a built-in map of known doc roots for common stacks, falling back to a live search for anything not in the map
 - Writes `CLAUDE.md` in a fixed six-section template (Project Overview, Architecture, Tech Stack, Conventions, Do, Don't) — every `Do`/`Don't` rule traceable to something it actually found in the codebase or actually fetched, never asserted from memory
@@ -116,6 +119,7 @@ Why it matters: a `CLAUDE.md` is only as good as it is specific and current — 
 Full plain-language explanation of everything this skill does: [`guides/general/initing-claude/README.md`](guides/general/initing-claude/README.md)
 
 **Use it effectively:**
+
 - First run on a project (no `CLAUDE.md` yet) does the full analysis — expect it to take longer than `/init`, since it's actually fetching current documentation, not just reading the repo
 - Every run after that should be the update flow — one mistake, one rule, immediately, rather than batching fixes
 - Requires live web access (`WebFetch`/`WebSearch`) to do its job properly — it's built for Claude Code, not environments without network access
@@ -142,6 +146,7 @@ ready-to-use prompt.
 4. Commit and push — skills.sh syncs automatically from GitHub.
 
 **Rules:**
+
 - Never modify `skills.sh.json` without also having the skill folder present.
 - Always keep the skill folder name identical to the `"name"` field in `skills.sh.json`.
 - `skills/` is the published source — `~/.claude/skills/` is the local dev sandbox.
