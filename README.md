@@ -12,9 +12,14 @@ npx skills add ahmed-elbaz/elbaz-blueprints
 # Install one specific skill
 npx skills add ahmed-elbaz/elbaz-blueprints --skill bootstrapping-flutter-mvvm
 npx skills add ahmed-elbaz/elbaz-blueprints --skill initing-claude
+npx skills add ahmed-elbaz/elbaz-blueprints --skill initing-codex
 
 # Install for a specific agent
 npx skills add ahmed-elbaz/elbaz-blueprints --skill bootstrapping-flutter-mvvm --agent claude-code
+npx skills add ahmed-elbaz/elbaz-blueprints --skill initing-codex --agent codex
+
+# Install the local, unpublished copy into Codex
+npx skills add . --skill initing-codex --agent codex
 
 # Install globally
 npx skills add ahmed-elbaz/elbaz-blueprints --global
@@ -37,7 +42,9 @@ elbaz-blueprints/
 │   │       ├── README.md    ← everything the skill does, in plain language
 │   │       └── flavors.md
 │   ├── general/
-│   │   └── initing-claude/
+│   │   ├── initing-claude/
+│   │   │   └── README.md    ← everything the skill does, in plain language
+│   │   └── initing-codex/
 │   │       └── README.md    ← everything the skill does, in plain language
 │   └── odoo/
 │       └── (coming soon)
@@ -48,7 +55,10 @@ elbaz-blueprints/
     │       ├── reference/
     │       └── scripts/
     ├── general/
-    │   └── initing-claude/
+    │   ├── initing-claude/
+    │   │   ├── SKILL.md
+    │   │   └── reference/
+    │   └── initing-codex/
     │       ├── SKILL.md
     │       └── reference/
     └── odoo/
@@ -61,6 +71,7 @@ elbaz-blueprints/
 |---|---|---|
 | [bootstrapping-flutter-mvvm](skills/flutter/bootstrapping-flutter-mvvm/SKILL.md) | Flutter | Scaffolds Flutter projects with MVVM + BLoC (Cubit) architecture — core infrastructure, feature skeletons, Android flavors, DI, routing, assets, localization, error handling, and theming. |
 | [initing-claude](skills/general/initing-claude/SKILL.md) | General | Generates or hardens a project's `CLAUDE.md` for any language/framework — detects the stack, fetches its current official docs, and writes strict, specific Do/Don't rules grounded in what was actually fetched or observed, never memorized. |
+| [initing-codex](skills/general/initing-codex/SKILL.md) | General | Generates or hardens a project's `AGENTS.md` for any language/framework — detects the stack, fetches current official docs, and writes concise instructions grounded in observed evidence. |
 
 ## Flutter
 
@@ -110,6 +121,14 @@ Full plain-language explanation of everything this skill does: [`guides/general/
 - Requires live web access (`WebFetch`/`WebSearch`) to do its job properly — it's built for Claude Code, not environments without network access
 
 Full usage: [skills/general/initing-claude/SKILL.md](skills/general/initing-claude/SKILL.md)
+
+### initing-codex
+
+Install the published copy for Codex with the command above. While developing this repository, install the local copy with `npx skills add . --skill initing-codex --agent codex`, then start a new Codex session so discovery runs again. Invoke it by asking Codex to initialize or refresh `AGENTS.md`.
+
+The package uses the portable `SKILL.md` format. OpenAI-hosted agent environments can consume skills through the Skills API, which accepts a skill directory or zip upload; that is separate from local Codex discovery. Other cloud hosts must support Agent Skills and define their own installation and invocation flow.
+
+Full usage: [skills/general/initing-codex/SKILL.md](skills/general/initing-codex/SKILL.md)
 
 ## Adding a new skill
 
