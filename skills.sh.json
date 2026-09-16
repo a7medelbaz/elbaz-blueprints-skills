@@ -16,6 +16,11 @@
       "name": "initing-codex",
       "path": "skills/general/initing-codex",
       "description": "Generates or hardens a project's AGENTS.md by analyzing the actual codebase and fetching current official documentation for its detected stack, then writing concise, evidence-grounded instructions for Codex."
+    },
+    {
+      "name": "tech-mentor",
+      "path": "skills/general/tech-mentor",
+      "description": "Creates or audits personalized, evidence-based technology learning and career paths focused on real-world capability, portfolio proof, and role readiness."
     }
   ]
 }
