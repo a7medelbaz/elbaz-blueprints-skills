@@ -25,7 +25,32 @@ Escalate a plan when discovery reveals another independent competency area, proo
 
 ## Learning units
 
-For each unit state why it matters for this learner, prerequisites, concepts, explicit exclusions, current sources or selected course segments, a hands-on task, retrieval/review activity, ready-to-continue evidence, effort range, and dependencies.
+Use this schema for every lesson or project unit:
+
+```md
+# Unit: <capability>
+
+## Why this matters
+## Prerequisites
+## Scope and exclusions
+## Learn
+## Practice
+## Real-work task
+## AI support
+## Self-check
+## Ready to continue when
+## Review later
+## If blocked or weak
+```
+
+- **Why this matters** connects the capability to the learner's intended work.
+- **Prerequisites** and **Scope and exclusions** prevent misplaced or premature study.
+- **Learn** names only the concepts and selected current sources needed for the task. Prefer official documentation for technical facts; do not reproduce an upstream manual.
+- **Practice** builds toward a **Real-work task** that resembles the target environment.
+- **AI support** provides prompts for level-appropriate explanation, hints without a solution, review against requirements, targeted extra practice, and scenario or interview simulation.
+- **Self-check** asks the learner to explain decisions and handle a variation.
+- **Ready to continue when** defines the required artifact, explanation, test result, or other evidence.
+- **Review later** schedules retrieval work. **If blocked or weak** directs the learner to refresh, simplify, or seek a diagnostic.
 
 Use this cycle:
 
@@ -33,4 +58,4 @@ Use this cycle:
 understand → build → explain → self-test → revisit later → apply in a larger task
 ```
 
-Design weekly sprints around a realistic outcome, learning activities, build task, verification, review schedule, and decision gate. Avoid precise hours or dates when inputs do not justify them. Add adjustment rules: what evidence means “continue,” “repeat,” “reduce scope,” or “advance.”
+Design weekly sprints around a realistic outcome, learning activities, build task, verification, review schedule, and decision gate. Avoid precise hours or dates when inputs do not justify them. Use [adaptation-loop](adaptation-loop.md) for checkpoint decisions and plan updates.
