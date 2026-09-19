@@ -77,7 +77,7 @@ elbaz-blueprints/
 | [bootstrapping-flutter-mvvm](skills/flutter/bootstrapping-flutter-mvvm/SKILL.md) | Flutter | Scaffolds Flutter projects with MVVM + BLoC (Cubit) architecture — core infrastructure, feature skeletons, Android flavors, DI, routing, assets, localization, error handling, and theming.                                                     |
 | [initing-claude](skills/general/initing-claude/SKILL.md)                         | General | Generates or hardens a project's`CLAUDE.md` for any language/framework — detects the stack, fetches its current official docs, and writes strict, specific Do/Don't rules grounded in what was actually fetched or observed, never memorized. |
 | [initing-codex](skills/general/initing-codex/SKILL.md)                           | General | Generates or hardens a project's`AGENTS.md` for any language/framework — detects the stack, fetches current official docs, and writes concise instructions grounded in observed evidence.                                                     |
-| [tech-mentor](skills/general/tech-mentor/SKILL.md)                               | General | Creates or audits personalized, evidence-based technology learning and career paths focused on real-world capability, portfolio proof, and role readiness.                                                                                         |
+| [tech-mentor](skills/general/tech-mentor/SKILL.md)                               | General | Builds or audits personalized technology learning workspaces with real-work practice, portfolio proof, and evidence-based adaptation.                                                                                                            |
 
 ## Flutter
 
@@ -142,7 +142,7 @@ Full usage: [skills/general/initing-codex/SKILL.md](skills/general/initing-codex
 
 ### tech-mentor
 
-Creates or audits personalized technology learning and career paths. It challenges unrealistic scope, maps prerequisites and evidence, researches compatible current versions, evaluates courses, and produces a proportionate Markdown workspace.
+Creates or audits personalized technology learning and career paths. It uses adaptive discovery, builds compact-to-large learning workspaces with real-work practice and AI support, and adapts the roadmap from learner evidence.
 
 Full usage: [skills/general/tech-mentor/SKILL.md](skills/general/tech-mentor/SKILL.md)
 
