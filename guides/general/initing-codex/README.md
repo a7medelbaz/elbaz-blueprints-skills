@@ -54,7 +54,7 @@ The file stays under roughly 200 lines. Rarely needed detail belongs in a refere
 Install for Codex with:
 
 ```bash
-npx skills add ahmed-elbaz/elbaz-blueprints --skill initing-codex --agent codex
+npx skills add a7medelbaz/elbaz-blueprints-skills --skill initing-codex --agent codex
 ```
 
 For the unpublished local copy, run this from the repository root instead:

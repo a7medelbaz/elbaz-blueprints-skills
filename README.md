@@ -7,23 +7,23 @@ Ahmed Elbaz's personal library of [agent skills](https://skills.sh), distributed
 
 ```bash
 # Install all skills
-npx skills add ahmed-elbaz/elbaz-blueprints
+npx skills add a7medelbaz/elbaz-blueprints-skills
 
 # Install one specific skill
-npx skills add ahmed-elbaz/elbaz-blueprints --skill bootstrapping-flutter-mvvm
-npx skills add ahmed-elbaz/elbaz-blueprints --skill initing-claude
-npx skills add ahmed-elbaz/elbaz-blueprints --skill initing-codex
-npx skills add ahmed-elbaz/elbaz-blueprints --skill tech-mentor
+npx skills add a7medelbaz/elbaz-blueprints-skills --skill bootstrapping-flutter-mvvm
+npx skills add a7medelbaz/elbaz-blueprints-skills --skill initing-claude
+npx skills add a7medelbaz/elbaz-blueprints-skills --skill initing-codex
+npx skills add a7medelbaz/elbaz-blueprints-skills --skill tech-mentor
 
 # Install for a specific agent
-npx skills add ahmed-elbaz/elbaz-blueprints --skill bootstrapping-flutter-mvvm --agent claude-code
-npx skills add ahmed-elbaz/elbaz-blueprints --skill initing-codex --agent codex
+npx skills add a7medelbaz/elbaz-blueprints-skills --skill bootstrapping-flutter-mvvm --agent claude-code
+npx skills add a7medelbaz/elbaz-blueprints-skills --skill initing-codex --agent codex
 
 # Install the local, unpublished copy into Codex
 npx skills add . --skill initing-codex --agent codex
 
 # Install globally
-npx skills add ahmed-elbaz/elbaz-blueprints --global
+npx skills add a7medelbaz/elbaz-blueprints-skills --global
 ```
 
 ## Structure
