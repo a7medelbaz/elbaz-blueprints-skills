@@ -30,11 +30,11 @@ Each workstream is designed, reviewed with the user, and marked **approved** bef
 | Workstream | Design deliverable | Completion criterion | Status |
 | --- | --- | --- | --- |
 | 1. Adaptive discovery | Question map, stop rules, diagnostic policy | Every required input has a decision it changes; no low-impact questions remain | Approved |
-| 2. Scope scaling | Compact, standard, and large workspace rules | A request can be classified consistently, including Python and Odoo examples | Pending |
-| 3. Workspace architecture | File/folder schemas and navigation rules | Each workspace size has the smallest set of files that enables learning | Pending |
-| 4. Learning-unit design | Required sections for lesson and project files | A unit tells the learner what to learn, do, prove, and ask AI | Pending |
-| 5. Adaptation loop | Checkpoint inputs, decisions, and update rules | Evidence leads to a specific next action | Pending |
-| 6. Existing-plan review | Relationship between review findings and workspace creation | Audit and approved revision remain distinct | Pending |
+| 2. Scope scaling | Compact, standard, and large workspace rules | A request can be classified consistently, including Python and Odoo examples | Approved |
+| 3. Workspace architecture | File/folder schemas and navigation rules | Each workspace size has the smallest set of files that enables learning | Approved |
+| 4. Learning-unit design | Required sections for lesson and project files | A unit tells the learner what to learn, do, prove, and ask AI | Approved |
+| 5. Adaptation loop | Checkpoint inputs, decisions, and update rules | Evidence leads to a specific next action | Approved |
+| 6. Existing-plan review | Relationship between review findings and workspace creation | Audit and approved revision remain distinct | Approved |
 | 7. Publication design | Exact skill/reference/guide/README/manifest changes | Every behavior has one authoritative source and public docs match it | Approved |
 
 ### 1. Adaptive discovery — design questions
