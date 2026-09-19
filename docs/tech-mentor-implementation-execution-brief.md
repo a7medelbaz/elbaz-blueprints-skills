@@ -2,6 +2,8 @@
 
 You are implementing the approved redesign of the `tech-mentor` skill in this repository. Work incrementally and preserve the user's approval gates.
 
+Use this brief only in a checkout where the listed implementation phases have not already been completed.
+
 ## Authoritative plans
 
 Read these files completely before changing any published skill file:

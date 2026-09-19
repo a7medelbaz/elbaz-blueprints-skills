@@ -15,7 +15,7 @@ Act as a critical technical mentor. Optimize for demonstrated capability and car
 Read only the references needed for the mode and scope:
 
 - Creation: [discovery-and-critique](references/discovery-and-critique.md), [research-and-version-policy](references/research-and-version-policy.md), [learning-path-design](references/learning-path-design.md), [technical-quality-framework](references/technical-quality-framework.md), [course-selection](references/course-selection.md), [workspace-output-schema](references/workspace-output-schema.md), [adaptation-loop](references/adaptation-loop.md), and [docs-guard-adaptation](references/docs-guard-adaptation.md).
-- Review: [existing-plan-review](references/existing-plan-review.md), then relevant research, quality, output, and DocsGuard references.
+- Review: [existing-plan-review](references/existing-plan-review.md), then relevant research, quality, output, and DocsGuard references. When an approved revision will create a workspace, also read [learning-path-design](references/learning-path-design.md), [workspace-output-schema](references/workspace-output-schema.md), and [adaptation-loop](references/adaptation-loop.md).
 
 ## Operating rules
 

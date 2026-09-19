@@ -4,6 +4,8 @@
 
 Implement the approved design in [the master plan](tech-mentor-learning-system-plan.md) through small, reviewable phases. Do not begin a phase until the preceding phase is validated and approved.
 
+Status: all phases completed and release-reviewed.
+
 ## Constraints
 
 - Preserve the current audit-first behavior for existing-plan review.

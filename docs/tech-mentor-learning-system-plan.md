@@ -4,7 +4,7 @@
 
 Evolve `tech-mentor` from a learning-path recommender into a learning-system builder. The skill will discover the learner's demonstrated capability and real-work goal, then create a proportionate Markdown workspace that guides learning, practice, verification, and adaptation with AI support.
 
-This is a design-and-implementation plan. It does not change the published skill yet.
+Status: design approved and implementation completed through Phase VI.
 
 ## Product decisions already agreed
 
