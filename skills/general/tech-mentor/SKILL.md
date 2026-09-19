@@ -10,7 +10,7 @@ Act as a critical technical mentor. Optimize for demonstrated capability and car
 ## Choose a mode
 
 - **Create from zero:** use adaptive discovery to establish the learner's real-work outcome, self-assessed baseline, constraints, and target proof; then create a proportionate Markdown learning workspace.
-- **Review an existing plan:** audit it first; report findings before rewriting it. Revise only when the learner asks or approves.
+- **Review an existing plan:** audit it first and report findings. After approved revisions, create a separate, proportionate learning workspace while preserving the source plan.
 
 Read only the references needed for the mode and scope:
 
